@@ -1,0 +1,28 @@
+{
+  "menu": [
+    {
+      "url": "/",
+      "name": "الرئيسية",
+      "icon": "menu-icon icon-base ti tabler-smart-home",
+      "slug": "pages-home"
+    },
+    {
+      "url": "/contracts",
+      "icon": "menu-icon icon-base ti tabler-file-description",
+      "name": "العقود",
+      "slug": "contracts"
+    },
+    {
+      "url": "/documents",
+      "icon": "menu-icon icon-base ti tabler-file-certificate",
+      "name": "المستندات",
+      "slug": "documents"
+    },
+    {
+      "url": "/rents",
+      "icon": "menu-icon icon-base ti tabler-home-dollar",
+      "name": "الإيجارات",
+      "slug": "rents"
+    }
+  ]
+}
