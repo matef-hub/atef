@@ -28,7 +28,7 @@
   </div>
 
   <div class="card-body">
-    <form action="{{ $action }}" method="POST" enctype="multipart/form-data"
+    <form action="{{ $action }}" method="POST" enctype="multipart/form-data" novalidate
       @if ($isUpdate) data-swal-confirm="true"
         data-swal-title="تأكيد التعديل"
         data-swal-text="سيتم حفظ التعديلات على بيانات العقد الحالي."
@@ -120,35 +120,38 @@
 
         <div class="col-md-6 form-control-validation">
           <x-label class="form-label" for="Pdf_image-input" value="ملف العقد" />
-          <input id="Pdf_image-input" type="file" name="Pdf_image" class="d-none" accept=".pdf,.doc,.docx">
+          <input id="Pdf_image-input" type="file" name="Pdf_image" class="d-none" accept=".pdf,.doc,.docx"
+            aria-label="رفع الملف">
 
           <div class="input-group legal-contract-file-group" data-contract-file-stage data-file-input="Pdf_image-input"
-            data-file-name-target="contract-file-name" data-file-preview-trigger="contract-file-preview-trigger"
-            data-file-modal="contract-file-preview-modal" data-file-modal-stage="contract-file-preview-stage"
-            data-file-modal-title="contract-file-preview-title" data-file-default-title="معاينة ملف العقد"
+            data-file-name-target="Pdf_image-file-name" data-file-preview-trigger="Pdf_image-preview-trigger"
+            data-file-modal="Pdf_image-preview-modal" data-file-modal-stage="Pdf_image-preview-stage"
+            data-file-modal-title="Pdf_image-preview-title" data-file-default-title="معاينة الملف"
             data-empty-name="لم يتم اختيار ملف بعد."
             @if ($contract?->pdf_image_url) data-preview-url="{{ $contract->pdf_image_url }}" @endif
             @if ($currentContractFileName) data-current-name="{{ $currentContractFileName }}" @endif
             @if ($currentContractFileExtension) data-current-extension="{{ $currentContractFileExtension }}" @endif>
-            <span id="contract-file-name"
-              class="form-control legal-contract-file-name {{ $errors->has('Pdf_image') ? 'is-invalid' : '' }}"
-              title="{{ $currentContractFileName ?: 'لم يتم اختيار ملف بعد.' }}">
+            <span id="Pdf_image-file-name"
+              class="form-control legal-contract-file-name @error('Pdf_image') is-invalid @enderror"
+              title="{{ $currentContractFileName ?: 'لم يتم اختيار ملف بعد.' }}" aria-live="polite">
               {{ $currentContractFileName ?: 'لم يتم اختيار ملف بعد.' }}
             </span>
 
-            <button id="contract-file-preview-trigger" type="button"
-              class="btn btn-outline-secondary {{ $currentContractFileName ? '' : 'd-none' }}">
-              <i class="icon-base ti tabler-eye icon-16px"></i>
+            <button id="Pdf_image-preview-trigger" type="button"
+              class="btn btn-outline-secondary {{ $currentContractFileName ? '' : 'd-none' }}" aria-label="معاينة الملف"
+              aria-controls="Pdf_image-preview-modal">
+              <i class="icon-base ti tabler-eye icon-16px" aria-hidden="true"></i>
               معاينة
             </button>
 
-            <button type="button" class="btn btn-primary" data-contract-file-trigger="Pdf_image-input">
-              <i class="icon-base ti tabler-upload icon-16px"></i>
+            <button type="button" class="btn btn-primary" data-contract-file-trigger="Pdf_image-input"
+              aria-label="{{ $currentContractFileName ? 'استبدال الملف' : 'اختيار ملف' }}">
+              <i class="icon-base ti tabler-upload icon-16px" aria-hidden="true"></i>
               {{ $currentContractFileName ? 'استبدال' : 'اختيار' }}
             </button>
           </div>
 
-          <small class="text-muted d-block mt-1">الملفات المدعومة: PDF / DOC / DOCX</small>
+          <small class="text-muted d-block mt-1">الملفات المدعومة: PDF / DOC / DOCX — الحد الأقصى: 10 ميجابايت</small>
           <x-input-error for="Pdf_image" class="d-block mt-2" />
         </div>
 
@@ -161,29 +164,30 @@
   </div>
 </div>
 
-<div class="modal fade legal-file-preview-modal" id="contract-file-preview-modal" tabindex="-1" aria-hidden="true">
+<div class="modal fade legal-file-preview-modal" id="Pdf_image-preview-modal" tabindex="-1"
+  aria-labelledby="Pdf_image-preview-title" aria-hidden="true" role="dialog">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title text-truncate" id="contract-file-preview-title">معاينة ملف العقد</h5>
-        <button type="button" class="btn-close ms-0" data-bs-dismiss="modal" aria-label="Close"></button>
+        <h5 class="modal-title text-truncate" id="Pdf_image-preview-title">معاينة الملف</h5>
+        <button type="button" class="btn-close ms-0" data-bs-dismiss="modal" aria-label="إغلاق"></button>
       </div>
 
       <div class="modal-body">
-        <div id="contract-file-preview-stage" class="legal-file-preview-stage">
-          <div class="legal-pdf-placeholder" data-pdf-empty>
-            <i class="icon-base ti tabler-file-upload text-primary mb-2"></i>
+        <div id="Pdf_image-preview-stage" class="legal-file-preview-stage" aria-live="polite">
+          <div class="legal-pdf-placeholder" data-pdf-empty role="status">
+            <i class="icon-base ti tabler-file-upload text-primary mb-2" aria-hidden="true"></i>
             <h6 class="mb-1">لم يتم اختيار ملف بعد</h6>
             <p class="mb-0 text-muted text-center">اختر ملفًا من النموذج لعرضه هنا</p>
           </div>
 
-          <div class="legal-pdf-placeholder d-none" data-pdf-unsupported>
-            <i class="icon-base ti tabler-file-alert text-warning mb-2"></i>
+          <div class="legal-pdf-placeholder d-none" data-pdf-unsupported role="status">
+            <i class="icon-base ti tabler-file-alert text-warning mb-2" aria-hidden="true"></i>
             <h6 class="mb-1">لا توجد معاينة مباشرة لهذا الملف</h6>
-            <p class="mb-0 text-muted text-center">المعاينة داخل المودال متاحة لملفات PDF فقط</p>
+            <p class="mb-0 text-muted text-center">المعاينة متاحة لملفات PDF فقط</p>
           </div>
 
-          <iframe class="legal-pdf-frame d-none" data-pdf-frame title="معاينة ملف العقد"></iframe>
+          <iframe class="legal-pdf-frame d-none" data-pdf-frame title="معاينة الملف"></iframe>
         </div>
       </div>
     </div>

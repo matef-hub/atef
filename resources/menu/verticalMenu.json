@@ -1,10 +1,10 @@
 {
   "menu": [
     {
-      "url": "/",
+      "url": "/dashboard",
       "name": "الرئيسية",
       "icon": "menu-icon icon-base ti tabler-smart-home",
-      "slug": "pages-home"
+      "slug": "dashboard"
     },
     {
       "menuHeader": "الإدارة القانونية"

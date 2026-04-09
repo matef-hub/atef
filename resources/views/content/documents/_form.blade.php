@@ -9,7 +9,7 @@
     <p class="card-subtitle mb-0">احتفظ ببيانات الإصدار والانتهاء مع النسخة الإلكترونية للمستند.</p>
   </div>
   <div class="card-body">
-    <form action="{{ $action }}" method="POST" enctype="multipart/form-data"
+    <form action="{{ $action }}" method="POST" enctype="multipart/form-data" novalidate
       @if ($isUpdate) data-swal-confirm="true"
         data-swal-title="تأكيد التعديل"
         data-swal-text="سيتم حفظ التعديلات على بيانات المستند الحالي."

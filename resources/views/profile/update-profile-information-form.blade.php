@@ -1,4 +1,8 @@
-<x-form-section submit="updateProfileInformation">
+@php
+  $currentPhotoName = $this->user->profile_photo_path ? basename($this->user->profile_photo_path) : null;
+@endphp
+
+<x-form-section submit="updateProfileInformation" has-files="true" novalidate="true">
   <x-slot name="title">
     {{ __('Profile Information') }}
   </x-slot>
@@ -15,10 +19,27 @@
 
     <!-- Profile Photo -->
     @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
-    <div class="mb-6" x-data="{photoName: null, photoPreview: null}">
-      <!-- Profile Photo File Input -->
-      <input type="file" hidden wire:model.live="photo" x-ref="photo"
-        x-on:change=" photoName = $refs.photo.files[0].name; const reader = new FileReader(); reader.onload = (e) => { photoPreview = e.target.result;}; reader.readAsDataURL($refs.photo.files[0]);" />
+    <div class="mb-6" x-data="{ photoName: @js($currentPhotoName), photoPreview: null }">
+      <div class="input-group legal-contract-file-group">
+        <!-- Profile Photo File Input -->
+        <input id="photo-input" type="file" name="photo" class="d-none" accept="image/*" aria-label="رفع الملف"
+          wire:model.live="photo" x-ref="photo"
+          x-on:change="photoName = $refs.photo.files[0]?.name || @js($currentPhotoName); if (!$refs.photo.files[0]) { photoPreview = null; return; } const reader = new FileReader(); reader.onload = event => { photoPreview = event.target.result; }; reader.readAsDataURL($refs.photo.files[0]);" />
+
+        <span id="photo-file-name" class="form-control legal-contract-file-name @error('photo') is-invalid @enderror"
+          x-bind:title="photoName || 'لم يتم اختيار ملف بعد.'" aria-live="polite"
+          x-text="photoName || 'لم يتم اختيار ملف بعد.'">
+          {{ $currentPhotoName ?: 'لم يتم اختيار ملف بعد.' }}
+        </span>
+
+        <button type="button" class="btn btn-primary" x-on:click.prevent="$refs.photo.click()"
+          x-bind:aria-label="photoName ? 'استبدال الملف' : 'اختيار ملف'">
+          <i class="icon-base ti tabler-upload icon-16px" aria-hidden="true"></i>
+          <span x-text="photoName ? 'استبدال' : 'اختيار'">{{ $currentPhotoName ? 'استبدال' : 'اختيار' }}</span>
+        </button>
+      </div>
+
+      <small class="text-muted d-block mt-1">الملفات المدعومة: JPG / JPEG / PNG / WEBP — الحد الأقصى: 10 ميجابايت</small>
 
       <!-- Current Profile Photo -->
       <div class="mt-2" x-show="! photoPreview">
@@ -29,10 +50,6 @@
       <div class="mt-2" x-show="photoPreview">
         <img x-bind:src="photoPreview" class="rounded-circle" width="80px" height="80px">
       </div>
-
-      <x-secondary-button class="mt-2 me-2" type="button" x-on:click.prevent="$refs.photo.click()">
-        {{ __('Select A New Photo') }}
-      </x-secondary-button>
 
       @if ($this->user->profile_photo_path)
       <button type="button" class="btn btn-danger mt-2" wire:click="deleteProfilePhoto">

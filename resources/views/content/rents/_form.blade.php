@@ -9,7 +9,7 @@
     <p class="card-subtitle mb-0">سجل بيانات الوحدة والقيم المالية واربط ملفات العقد المطلوبة.</p>
   </div>
   <div class="card-body">
-    <form action="{{ $action }}" method="POST" enctype="multipart/form-data"
+    <form action="{{ $action }}" method="POST" enctype="multipart/form-data" novalidate
       @if ($isUpdate) data-swal-confirm="true"
         data-swal-title="تأكيد التعديل"
         data-swal-text="سيتم حفظ التعديلات على بيانات عقد الإيجار الحالي."
@@ -76,11 +76,11 @@
           <x-input-error for="insurance_mon" />
         </div>
 
-        <x-storage-uploader name="con_pdf" label="ملف العقد PDF" accept=".pdf" hint="مسموح PDF فقط بحد أقصى 10 ميجا."
+        <x-storage-uploader name="con_pdf" label="ملف العقد PDF" accept=".pdf"
           wrapper-class="col-md-4 form-control-validation" :current-url="$rent?->con_pdf_url" :current-name="$rent?->con_pdf ? basename($rent->con_pdf) : null" />
 
         <x-storage-uploader name="con_word" label="ملف العقد Word" accept=".doc,.docx"
-          hint="مسموح DOC / DOCX بحد أقصى 10 ميجا." wrapper-class="col-md-4 form-control-validation" :preview-enabled="false"
+          wrapper-class="col-md-4 form-control-validation"
           :current-url="$rent?->con_word_url" :current-name="$rent?->con_word ? basename($rent->con_word) : null" />
 
         <div class="col-md-6 form-control-validation">
