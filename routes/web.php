@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\CaseHearingController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\LegalCaseController;
 use App\Http\Controllers\RentController;
 use App\Http\Controllers\language\LanguageController;
 use App\Http\Controllers\pages\HomePage;
@@ -21,6 +23,8 @@ Route::middleware([
 ])->group(function () {
   Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+  Route::resource('cases', LegalCaseController::class);
+  Route::resource('hearings', CaseHearingController::class);
   Route::resource('contracts', ContractController::class);
   Route::resource('documents', DocumentController::class);
   Route::resource('rents', RentController::class);

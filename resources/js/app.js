@@ -53,11 +53,13 @@ document.addEventListener('DOMContentLoaded', () => {
   initLegalDataTables();
   initLegalDatePickers();
   initLegalProjectComboboxes();
+  initLegalSingleSelects();
   initLegalMultiSelects();
   initLegalDashboardCharts();
   initContractFileStages();
   initLegalDropzones();
   initLegalSweetAlertForms();
+  initLegalCaseWizards();
 });
 
 // ---------------------------------------------------------------------------
@@ -71,6 +73,15 @@ function initLegalDataTables() {
 
   document.querySelectorAll('.legal-datatable').forEach(table => {
     if (table.dataset.datatableReady === 'true') {
+      return;
+    }
+
+    const hasUnsupportedColspanRow = [...table.querySelectorAll('tbody tr')].some(
+      row => row.children.length === 1 && row.querySelector('td[colspan]')
+    );
+
+    if (hasUnsupportedColspanRow) {
+      table.dataset.datatableReady = 'skipped';
       return;
     }
 
@@ -184,21 +195,31 @@ function initLegalProjectComboboxes() {
     return;
   }
 
-  window.jQuery('.legal-project-combobox').each(function initCombobox() {
+  window.jQuery('.legal-project-combobox, .legal-tag-select').each(function initCombobox() {
     const field = window.jQuery(this);
+    const tagsEnabled =
+      field.hasClass('legal-project-combobox') || field.data('tags') === true || field.data('tags') === 'true';
 
     if (field.hasClass('select2-hidden-accessible')) {
       return;
     }
 
-    field.wrap('<div class="position-relative"></div>').select2({
-      tags: true,
+    if (!field.parent().hasClass('position-relative')) {
+      field.wrap('<div class="position-relative"></div>');
+    }
+
+    field.select2({
+      tags: tagsEnabled,
       dir: 'rtl',
       width: '100%',
       dropdownParent: field.parent(),
       placeholder: field.data('placeholder') || 'اختر أو اكتب اسم المشروع',
       allowClear: true,
       createTag(params) {
+        if (!tagsEnabled) {
+          return null;
+        }
+
         const term = window.jQuery.trim(params.term);
 
         if (!term) {
@@ -224,6 +245,36 @@ function initLegalProjectComboboxes() {
 // Select2 — multi-select
 // ---------------------------------------------------------------------------
 
+function initLegalSingleSelects() {
+  if (typeof window.jQuery === 'undefined' || typeof window.jQuery.fn.select2 === 'undefined') {
+    return;
+  }
+
+  window.jQuery('.legal-single-select').each(function initSingleSelect() {
+    const field = window.jQuery(this);
+
+    if (field.hasClass('select2-hidden-accessible')) {
+      return;
+    }
+
+    if (!field.parent().hasClass('position-relative')) {
+      field.wrap('<div class="position-relative"></div>');
+    }
+
+    field.select2({
+      dir: 'rtl',
+      width: '100%',
+      allowClear: true,
+      dropdownParent: field.parent(),
+      placeholder: field.data('placeholder') || 'اختر من القائمة'
+    });
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Select2 â€” multi-select
+// ---------------------------------------------------------------------------
+
 function initLegalMultiSelects() {
   if (typeof window.jQuery === 'undefined' || typeof window.jQuery.fn.select2 === 'undefined') {
     return;
@@ -243,6 +294,213 @@ function initLegalMultiSelects() {
       placeholder: field.data('placeholder') || 'اختر من القائمة',
       closeOnSelect: false
     });
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Cases wizard
+// ---------------------------------------------------------------------------
+
+function initLegalCaseWizards() {
+  if (typeof window.Stepper === 'undefined') {
+    return;
+  }
+
+  document.querySelectorAll('[data-legal-case-wizard]').forEach(wizard => {
+    if (wizard.dataset.caseWizardReady === 'true') {
+      return;
+    }
+
+    const form = wizard.closest('form');
+
+    if (!form) {
+      return;
+    }
+
+    const stepper = new window.Stepper(wizard, {
+      linear: false
+    });
+
+    const typeInputs = form.querySelectorAll('[data-case-type-input]');
+    const typeSummary = form.querySelector('[data-case-summary="case_type"]');
+    const caseNumberSummary = form.querySelector('[data-case-summary="case_number"]');
+    const caseNumberPreview = form.querySelector('[data-case-summary-preview="case_number"]');
+    const partiesSummary = form.querySelector('[data-case-summary="parties"]');
+    const judgmentDateInput = form.querySelector('[data-judgment-date-input]');
+    const appealToggle = form.querySelector('[data-has-appeal-toggle]');
+    const appealPanel = form.querySelector('[data-appeal-panel]');
+    const appealDeadlineDate = form.querySelector('[data-appeal-deadline-date]');
+    const appealDeadlineNote = form.querySelector('[data-appeal-deadline-note]');
+
+    const toggleControlState = (field, disabled) => {
+      field.disabled = disabled;
+
+      if (field._flatpickr?.altInput) {
+        field._flatpickr.altInput.disabled = disabled;
+      }
+
+      if (
+        typeof window.jQuery !== 'undefined' &&
+        typeof window.jQuery.fn.select2 !== 'undefined' &&
+        field.classList.contains('select2-hidden-accessible')
+      ) {
+        window.jQuery(field).prop('disabled', disabled).trigger('change.select2');
+      }
+    };
+
+    const togglePanelControls = (panel, enabled) => {
+      panel.querySelectorAll('input, select, textarea').forEach(field => {
+        toggleControlState(field, !enabled);
+      });
+    };
+
+    const getSelectedType = () =>
+      form.querySelector('[data-case-type-input]:checked')?.value || 'civil';
+
+    const getFieldValue = fieldName => {
+      const activeField = [...form.querySelectorAll(`[name="${fieldName}"]`)].find(field => !field.disabled);
+      return activeField?.value?.trim() || '';
+    };
+
+    const updateSummary = () => {
+      const selectedType = getSelectedType();
+      const typeLabel = selectedType === 'criminal' ? 'جنائية' : 'مدنية';
+      const caseNumber = getFieldValue('case_number');
+      const primaryParty = getFieldValue('primary_party_name');
+      const opponentParty = getFieldValue('opponent_party_name');
+
+      if (typeSummary) {
+        typeSummary.textContent = typeLabel;
+      }
+
+      if (caseNumberSummary) {
+        caseNumberSummary.textContent = caseNumber || '—';
+      }
+
+      if (caseNumberPreview) {
+        caseNumberPreview.textContent = caseNumber || 'لم يتم إدخال رقم الدعوى بعد';
+      }
+
+      if (partiesSummary) {
+        partiesSummary.textContent = primaryParty && opponentParty ? `${primaryParty} / ${opponentParty}` : '—';
+      }
+    };
+
+    const updateAppealDeadline = () => {
+      if (!appealDeadlineDate || !appealDeadlineNote) {
+        return;
+      }
+
+      const selectedType = getSelectedType();
+
+      if (selectedType !== 'civil') {
+        appealDeadlineDate.textContent = 'غير مطبق على القضايا الجنائية';
+        appealDeadlineNote.textContent = 'هذه الخطوة مخصصة للقضايا المدنية فقط.';
+        return;
+      }
+
+      const judgmentValue = judgmentDateInput?.value;
+
+      if (!judgmentValue) {
+        appealDeadlineDate.textContent = 'لم يتم تحديد تاريخ الحكم';
+        appealDeadlineNote.textContent = 'أدخل تاريخ الحكم ليتم حساب مهلة الاستئناف تلقائيًا.';
+        return;
+      }
+
+      const judgmentDate = new Date(`${judgmentValue}T00:00:00`);
+
+      if (Number.isNaN(judgmentDate.getTime())) {
+        appealDeadlineDate.textContent = 'تاريخ غير صالح';
+        appealDeadlineNote.textContent = 'يرجى مراجعة تاريخ الحكم.';
+        return;
+      }
+
+      const deadline = new Date(judgmentDate);
+      deadline.setDate(deadline.getDate() + 40);
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const msPerDay = 24 * 60 * 60 * 1000;
+      const remainingDays = Math.round((deadline.getTime() - today.getTime()) / msPerDay);
+
+      appealDeadlineDate.textContent = formatDateYmd(deadline);
+
+      if (remainingDays >= 0) {
+        appealDeadlineNote.textContent = `متبقي ${remainingDays} يومًا حتى نهاية مهلة الاستئناف.`;
+        return;
+      }
+
+      appealDeadlineNote.textContent = `انتهت مهلة الاستئناف منذ ${Math.abs(remainingDays)} يومًا.`;
+    };
+
+    const syncAppealPanel = () => {
+      const selectedType = getSelectedType();
+      const showAppealPanel = selectedType === 'civil' && Boolean(appealToggle?.checked);
+
+      if (!appealPanel) {
+        return;
+      }
+
+      appealPanel.classList.toggle('d-none', !showAppealPanel);
+      togglePanelControls(appealPanel, showAppealPanel);
+    };
+
+    const syncTypePanels = () => {
+      const selectedType = getSelectedType();
+
+      form.querySelectorAll('[data-case-type-card]').forEach(card => {
+        card.classList.toggle('is-active', card.dataset.caseTypeCard === selectedType);
+      });
+
+      form.querySelectorAll('[data-case-panel]').forEach(panel => {
+        const isActive = panel.dataset.casePanel === selectedType;
+        panel.classList.toggle('d-none', !isActive);
+        togglePanelControls(panel, isActive);
+      });
+
+      if (selectedType !== 'civil' && appealToggle) {
+        appealToggle.checked = false;
+      }
+
+      syncAppealPanel();
+      updateSummary();
+      updateAppealDeadline();
+    };
+
+    wizard.querySelectorAll('.btn-next').forEach(button => {
+      button.addEventListener('click', () => {
+        stepper.next();
+      });
+    });
+
+    wizard.querySelectorAll('.btn-prev').forEach(button => {
+      button.addEventListener('click', () => {
+        stepper.previous();
+      });
+    });
+
+    typeInputs.forEach(input => input.addEventListener('change', syncTypePanels));
+    appealToggle?.addEventListener('change', syncAppealPanel);
+    judgmentDateInput?.addEventListener('change', updateAppealDeadline);
+
+    form.addEventListener('input', event => {
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+        updateSummary();
+      }
+    });
+
+    form.addEventListener('change', event => {
+      if (event.target instanceof HTMLSelectElement) {
+        updateSummary();
+      }
+    });
+
+    syncTypePanels();
+    updateSummary();
+    updateAppealDeadline();
+
+    wizard.dataset.caseWizardReady = 'true';
   });
 }
 
@@ -687,6 +945,14 @@ function syncFileInput(input, file) {
 
 function clearFileInput(input) {
   input.value = '';
+}
+
+function formatDateYmd(date) {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
 }
 
 // ---------------------------------------------------------------------------

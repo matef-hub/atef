@@ -258,8 +258,215 @@ h6,
   font-weight: 700;
 }
 
+.legal-case-wizard .bs-stepper-header {
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.legal-case-wizard .bs-stepper-content {
+  padding-inline: 0;
+}
+
+.legal-case-type-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 1.25rem;
+  background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.05), rgba(var(--bs-body-bg-rgb), 1));
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.legal-case-type-option:hover,
+.legal-case-type-option.is-active {
+  border-color: rgba(var(--bs-primary-rgb), 0.45);
+  box-shadow: 0 0.75rem 2rem rgba(15, 23, 42, 0.08);
+  transform: translateY(-2px);
+}
+
+.legal-case-type-option .form-check-input {
+  margin-top: 0.35rem;
+  flex-shrink: 0;
+}
+
+.legal-case-type-option__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1rem;
+  background-color: rgba(var(--bs-primary-rgb), 0.1);
+  color: var(--bs-primary);
+  font-size: 1.5rem;
+}
+
+.legal-case-type-option__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.legal-case-type-option__title {
+  color: var(--bs-heading-color);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.legal-case-type-option__subtitle {
+  color: var(--bs-secondary-color);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.legal-case-insight,
+.legal-case-summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  height: 100%;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 1rem;
+  background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.06), rgba(var(--bs-body-bg-rgb), 1));
+}
+
+.legal-case-summary-card__label {
+  color: var(--bs-secondary-color);
+  font-size: 0.8125rem;
+}
+
+.legal-inline-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0;
+  padding: 0.85rem 1rem;
+  padding-inline-start: 1rem;
+  border: 1px dashed rgba(var(--bs-primary-rgb), 0.35);
+  border-radius: 0.9rem;
+  background-color: rgba(var(--bs-primary-rgb), 0.04);
+  cursor: pointer;
+}
+
+.legal-inline-check.form-check {
+  min-height: auto;
+}
+
+.legal-inline-check .form-check-input {
+  float: none;
+  margin-top: 0;
+  margin-right: 0;
+  margin-left: 0;
+  margin-inline-start: 0;
+  flex-shrink: 0;
+}
+
+.legal-inline-check .form-check-label {
+  margin: 0;
+}
+
+.legal-attachment-row {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  height: 100%;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 1rem;
+  background-color: var(--bs-paper-bg);
+}
+
+.legal-attachment-row__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.85rem;
+  background-color: rgba(var(--bs-primary-rgb), 0.08);
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+
+.legal-attachment-row__content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0.25rem;
+  flex-grow: 1;
+}
+
+.legal-dashboard-quick-panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.legal-mini-stat {
+  padding: 1rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 1rem;
+  background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.07), rgba(var(--bs-body-bg-rgb), 1));
+}
+
+.legal-mini-stat__label {
+  display: block;
+  color: var(--bs-secondary-color);
+  font-size: 0.8125rem;
+  margin-bottom: 0.25rem;
+}
+
+.legal-mini-stat__value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--bs-heading-color);
+}
+
+.legal-upcoming-hearing-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.legal-upcoming-hearing-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 1rem;
+  background-color: var(--bs-paper-bg);
+}
+
+.legal-upcoming-hearing-item__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.9rem;
+  background-color: rgba(var(--bs-info-rgb), 0.1);
+  color: var(--bs-info);
+  flex-shrink: 0;
+}
+
+.legal-upcoming-hearing-item__content {
+  min-width: 0;
+  flex-grow: 1;
+}
+
 @media (max-width: 575.98px) {
   .legal-metric-strip {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .legal-dashboard-quick-panel {
     grid-template-columns: minmax(0, 1fr);
   }
 }

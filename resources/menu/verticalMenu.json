@@ -10,6 +10,18 @@
       "menuHeader": "الإدارة القانونية"
     },
     {
+      "url": "/cases",
+      "icon": "menu-icon icon-base ti tabler-scale",
+      "name": "القضايا",
+      "slug": "cases"
+    },
+    {
+      "url": "/hearings",
+      "icon": "menu-icon icon-base ti tabler-calendar-event",
+      "name": "الجلسات",
+      "slug": "hearings"
+    },
+    {
       "url": "/contracts",
       "icon": "menu-icon icon-base ti tabler-file-description",
       "name": "العقود",

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CaseHearing;
 use App\Models\Contract;
 use App\Models\Document;
+use App\Models\LegalCase;
 use App\Models\Rent;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
@@ -17,18 +19,44 @@ class DashboardController extends Controller
         $requiredSignatureCount = count(Contract::signOptions());
 
         $totalContracts = Contract::query()->count();
-
-        $activeCasesCount = Document::query()
-            ->where(function ($query) use ($today) {
-                $query->whereNull('docu_expiry_date')
-                    ->orWhereDate('docu_expiry_date', '>=', $today);
-            })
-            ->count();
-
+        $activeCasesCount = LegalCase::query()->count();
         $pendingSignaturesCount = Contract::query()
             ->get(['id', 'sign'])
             ->filter(fn (Contract $contract) => count($contract->sign) < $requiredSignatureCount)
             ->count();
+
+        $appealDeadlineCases = LegalCase::query()
+            ->where('case_type', LegalCase::TYPE_CIVIL)
+            ->whereNotNull('judgment_issued_at')
+            ->where('has_appeal', false)
+            ->whereDate('judgment_issued_at', '<=', $today)
+            ->whereDate('judgment_issued_at', '>=', $today->copy()->subDays(40))
+            ->orderByDesc('judgment_issued_at')
+            ->get()
+            ->map(fn (LegalCase $case) => [
+                'title' => $case->case_number ?: 'قضية مدنية',
+                'subtitle' => $case->parties_summary,
+                'deadline_at' => optional($case->appeal_deadline_at)->format('Y-m-d'),
+                'days_remaining' => $case->appeal_deadline_at
+                    ? $today->diffInDays($case->appeal_deadline_at, false)
+                    : null,
+                'edit_url' => route('cases.edit', $case),
+            ]);
+
+        $upcomingCaseHearings = CaseHearing::query()
+            ->with('legalCase')
+            ->whereNotNull('next_hearing_at')
+            ->whereDate('next_hearing_at', '>=', $today)
+            ->whereDate('next_hearing_at', '<=', $renewalWindowEnd)
+            ->orderBy('next_hearing_at')
+            ->get()
+            ->map(fn (CaseHearing $hearing) => [
+                'title' => $hearing->legalCase?->case_number ?: 'جلسة قادمة',
+                'subtitle' => $hearing->legalCase?->parties_summary,
+                'hearing_at' => optional($hearing->next_hearing_at)->format('Y-m-d'),
+                'decision' => $hearing->court_decision,
+                'edit_url' => route('hearings.edit', $hearing),
+            ]);
 
         $expiringRentContracts = Rent::query()
             ->whereNotNull('date_end')
@@ -61,7 +89,17 @@ class DashboardController extends Controller
                 'review_url' => route('documents.edit', $document),
             ]);
 
-        $urgentAlertsCount = $expiringRentContracts->count() + $expiringDocuments->count();
+        $caseOverview = [
+            'civil' => LegalCase::query()->where('case_type', LegalCase::TYPE_CIVIL)->count(),
+            'criminal' => LegalCase::query()->where('case_type', LegalCase::TYPE_CRIMINAL)->count(),
+            'appeal_windows' => $appealDeadlineCases->count(),
+            'upcoming_hearings' => $upcomingCaseHearings->count(),
+        ];
+
+        $urgentAlertsCount = $appealDeadlineCases->count()
+            + $upcomingCaseHearings->count()
+            + $expiringRentContracts->count()
+            + $expiringDocuments->count();
 
         $recentContracts = Contract::query()
             ->latest()
@@ -89,6 +127,9 @@ class DashboardController extends Controller
             'activeCasesCount',
             'pendingSignaturesCount',
             'urgentAlertsCount',
+            'caseOverview',
+            'appealDeadlineCases',
+            'upcomingCaseHearings',
             'expiringRentContracts',
             'expiringDocuments',
             'recentContracts',
@@ -99,6 +140,44 @@ class DashboardController extends Controller
 
     protected function buildLatestActivities(): Collection
     {
+        $caseActivities = LegalCase::query()
+            ->latest('updated_at')
+            ->take(4)
+            ->get()
+            ->map(fn (LegalCase $case) => $this->makeActivityItem(
+                model: $case,
+                createTitle: 'تمت إضافة قضية جديدة',
+                updateTitle: 'تم تحديث قضية',
+                description: collect([
+                    $case->case_number ? 'رقم ' . $case->case_number : null,
+                    $case->parties_summary ?: null,
+                ])->filter()->implode(' • '),
+                badge: 'القضايا',
+                badgeClass: 'warning',
+                icon: 'tabler-scale',
+                editUrl: route('cases.edit', $case),
+            ));
+
+        $hearingActivities = CaseHearing::query()
+            ->with('legalCase')
+            ->latest('updated_at')
+            ->take(4)
+            ->get()
+            ->map(fn (CaseHearing $hearing) => $this->makeActivityItem(
+                model: $hearing,
+                createTitle: 'تم تسجيل جلسة جديدة',
+                updateTitle: 'تم تحديث جلسة',
+                description: collect([
+                    $hearing->legalCase?->case_number,
+                    $hearing->hearing_date ? 'جلسة ' . $hearing->hearing_date->format('Y-m-d') : null,
+                    $hearing->roll_number ? 'رول ' . $hearing->roll_number : null,
+                ])->filter()->implode(' • '),
+                badge: 'الجلسات',
+                badgeClass: 'info',
+                icon: 'tabler-calendar-event',
+                editUrl: route('hearings.edit', $hearing),
+            ));
+
         $contractActivities = Contract::query()
             ->latest('updated_at')
             ->take(4)
@@ -123,15 +202,15 @@ class DashboardController extends Controller
             ->get()
             ->map(fn (Document $document) => $this->makeActivityItem(
                 model: $document,
-                createTitle: 'تمت إضافة ملف قانوني',
-                updateTitle: 'تم تحديث ملف قانوني',
+                createTitle: 'تمت إضافة مستند قانوني',
+                updateTitle: 'تم تحديث مستند قانوني',
                 description: collect([
                     $document->docu_name ?: 'مستند بدون اسم',
                     $document->docu_issu_from,
                 ])->filter()->implode(' • '),
-                badge: 'الملفات',
-                badgeClass: 'warning',
-                icon: 'tabler-gavel',
+                badge: 'المستندات',
+                badgeClass: 'secondary',
+                icon: 'tabler-file-certificate',
                 editUrl: route('documents.edit', $document),
             ));
 
@@ -148,12 +227,14 @@ class DashboardController extends Controller
                     $rent->tenant_name,
                 ])->filter()->implode(' • '),
                 badge: 'الإيجارات',
-                badgeClass: 'info',
+                badgeClass: 'success',
                 icon: 'tabler-home-dollar',
                 editUrl: route('rents.edit', $rent),
             ));
 
-        return $contractActivities
+        return $caseActivities
+            ->concat($hearingActivities)
+            ->concat($contractActivities)
             ->concat($documentActivities)
             ->concat($rentActivities)
             ->sortByDesc('timestamp')
