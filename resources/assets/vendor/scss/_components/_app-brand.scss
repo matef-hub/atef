@@ -7,22 +7,20 @@
   align-items: center;
   line-height: 1;
 
-
   .app-brand-text {
-    margin-inline-start: .75rem;
+    margin-inline-start: 0.15rem !important;
     opacity: 1;
     transition: opacity $menu-animation-duration ease-in-out;
   }
-
 
   .layout-menu-toggle {
     display: block;
   }
 
-  .app-brand-img{
+  .app-brand-img {
     display: block;
   }
-  .app-brand-img-collapsed{
+  .app-brand-img-collapsed {
     display: none;
   }
 }
@@ -40,7 +38,7 @@
 
 // App brand with vertical menu
 .menu-vertical .app-brand {
-  padding-inline: $menu-vertical-link-padding-x + .625rem $menu-vertical-link-padding-x + .25rem;
+  padding-inline: $menu-vertical-link-padding-x + 0.625rem $menu-vertical-link-padding-x + 0.25rem;
 }
 
 /* App brand with vertical menu */
@@ -53,13 +51,13 @@
   // .layout-menu-collapsed:not(.layout-menu-hover, .layout-menu-offcanvas, .layout-menu-fixed-offcanvas) .layout-menu {
   .layout-menu-collapsed:not(.layout-menu-hover) .layout-menu,
   .menu-collapsed:not(:hover) .app-brand {
-    .app-brand-logo ~ .app-brand-text{
+    .app-brand-logo ~ .app-brand-text {
       opacity: 0;
     }
-    .app-brand-img{
+    .app-brand-img {
       display: none;
     }
-    .app-brand-img-collapsed{
+    .app-brand-img-collapsed {
       display: block;
     }
   }
