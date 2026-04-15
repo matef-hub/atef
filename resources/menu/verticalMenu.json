@@ -38,6 +38,12 @@
       "icon": "menu-icon icon-base ti tabler-home-dollar",
       "name": "الإيجارات",
       "slug": "rents"
+    },
+    {
+      "url": "/legal-reports",
+      "icon": "menu-icon icon-base ti tabler-report-search",
+      "name": "مركز التقارير القانونية",
+      "slug": "legal-reports"
     }
   ]
 }
