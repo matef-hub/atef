@@ -179,6 +179,7 @@ function initLegalDatePickers() {
       altInput: true,
       altFormat: 'j F Y',
       locale: Arabic,
+      static: true,
       weekNumbers: true,
       allowInput: true,
       monthSelectorType: 'dropdown',
@@ -216,7 +217,7 @@ function initLegalProjectComboboxes() {
       dir: 'rtl',
       width: '100%',
       dropdownParent: field.parent(),
-      placeholder: field.data('placeholder') || 'اختر أو اكتب اسم المشروع',
+      placeholder: field.data('placeholder') || 'اختر أو اكتب',
       allowClear: true,
       createTag(params) {
         if (!tagsEnabled) {
@@ -237,7 +238,7 @@ function initLegalProjectComboboxes() {
       },
       language: {
         noResults() {
-          return 'اكتب اسم مشروع جديد';
+          return field.data('no-results') || 'لا توجد نتائج';
         }
       }
     });
@@ -470,18 +471,32 @@ function initLegalCaseWizards() {
       updateAppealDeadline();
     };
 
+    // وظيفة موحدة لإعادة رسم كافة عناصر Flatpickr
+    const refreshFlatpickr = () => {
+      setTimeout(() => {
+        document.querySelectorAll('.flatpickr-date').forEach(element => {
+          if (element._flatpickr) {
+            element._flatpickr.redraw();
+          }
+        });
+      }, 150); // زيادة طفيفة للتأكد من انتهاء أي Animation للـ Wizard
+    };
+
+    // تفعيل الوظيفة عند الضغط على التالي
     wizard.querySelectorAll('.btn-next').forEach(button => {
       button.addEventListener('click', () => {
         stepper.next();
+        refreshFlatpickr();
       });
     });
 
+    // تفعيل الوظيفة عند الضغط على السابق
     wizard.querySelectorAll('.btn-prev').forEach(button => {
       button.addEventListener('click', () => {
         stepper.previous();
+        refreshFlatpickr();
       });
     });
-
     typeInputs.forEach(input => input.addEventListener('change', syncTypePanels));
     appealToggle?.addEventListener('change', syncAppealPanel);
     judgmentDateInput?.addEventListener('change', updateAppealDeadline);

@@ -52,7 +52,7 @@
 
         <div class="col-md-4 form-control-validation">
           <x-label class="form-label" for="proje_name" value="اسم المشروع" />
-          <select id="proje_name" name="proje_name"
+          <select id="proje_name" name="proje_name" data-no-results="لا يوجد مشروع مطابق"
             class="form-select legal-project-combobox {{ $errors->has('proje_name') ? 'is-invalid' : '' }}"
             data-placeholder="اختر أو اكتب اسم المشروع">
             <option value=""></option>
@@ -138,8 +138,8 @@
             </span>
 
             <button id="Pdf_image-preview-trigger" type="button"
-              class="btn btn-outline-secondary {{ $currentContractFileName ? '' : 'd-none' }}" aria-label="معاينة الملف"
-              aria-controls="Pdf_image-preview-modal">
+              class="btn btn-outline-secondary {{ $currentContractFileName ? '' : 'd-none' }}"
+              aria-label="معاينة الملف" aria-controls="Pdf_image-preview-modal">
               <i class="icon-base ti tabler-eye icon-16px" aria-hidden="true"></i>
               معاينة
             </button>

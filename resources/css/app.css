@@ -478,3 +478,9 @@ h6,
     flex-direction: row;
   }
 }
+
+.flatpickr-days {
+  min-width: stretch !important;
+  min-width: -webkit-fill-available !important;
+  min-width: -moz-available !important;
+}

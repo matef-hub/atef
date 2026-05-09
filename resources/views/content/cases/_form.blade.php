@@ -196,7 +196,7 @@
 
                   <div class="col-md-6">
                     <x-label class="form-label" for="primary_court_name" value="منظورة أمام محكمة" />
-                    <select id="primary_court_name" name="primary_court_name"
+                    <select id="primary_court_name" name="primary_court_name" data-no-results="لا توجد محكمة مطابقة"
                       class="form-select legal-tag-select {{ $errors->has('primary_court_name') ? 'is-invalid' : '' }}"
                       data-case-field="civil" data-tags="true" data-placeholder="اختر المحكمة أو أضف اسمًا جديدًا">
                       <option value=""></option>

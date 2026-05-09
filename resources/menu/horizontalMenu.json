@@ -7,27 +7,43 @@
       "slug": "dashboard"
     },
     {
-      "url": "/cases",
-      "icon": "menu-icon icon-base ti tabler-scale",
-      "name": "القضايا",
-      "slug": "cases"
+      "menuHeader": "القضاياوالجلسات"
     },
     {
-      "url": "/hearings",
-      "icon": "menu-icon icon-base ti tabler-calendar-event",
-      "name": "الجلسات",
-      "slug": "hearings"
+      "name": "إدارة الدعاوى",
+      "icon": "menu-icon icon-base ti tabler-scale",
+      "slug": "litigation-management",
+      "submenu": [
+        {
+          "url": "/cases",
+          "name": "القضايا",
+          "slug": "cases"
+        },
+        {
+          "url": "/hearings",
+          "name": "الجلسات",
+          "slug": "hearings"
+        },
+        {
+          "url": "/hearings-calendar",
+          "name": "أجندة الجلسات",
+          "slug": "hearing-calendar"
+        }
+      ]
+    },
+    {
+      "menuHeader": "العقود والمستندات"
     },
     {
       "url": "/contracts",
       "icon": "menu-icon icon-base ti tabler-file-description",
-      "name": "العقود",
+      "name": "عقود المقاولات",
       "slug": "contracts"
     },
     {
       "url": "/documents",
       "icon": "menu-icon icon-base ti tabler-file-certificate",
-      "name": "المستندات",
+      "name": "مستندات الشركة",
       "slug": "documents"
     },
     {
@@ -41,6 +57,9 @@
       "icon": "menu-icon icon-base ti tabler-report-search",
       "name": "مركز التقارير القانونية",
       "slug": "legal-reports"
+    },
+    {
+      "menuHeader": "إعدادات النظام"
     },
     {
       "url": "/system-settings",

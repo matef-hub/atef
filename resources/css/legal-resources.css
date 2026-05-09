@@ -7,7 +7,9 @@
   border-radius: 1rem;
   background-color: rgba(var(--bs-primary-rgb), 0.04);
   min-block-size: 13rem;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .legal-dropzone:hover {
@@ -136,4 +138,37 @@
 .legal-file-preview-stage .legal-pdf-frame {
   border: 0;
   border-radius: 0;
+}
+
+.legal-hearings-calendar-page {
+  direction: rtl;
+}
+
+.legal-hearings-calendar .app-calendar-sidebar,
+.legal-hearing-calendar-sidebar {
+  direction: rtl;
+}
+
+.legal-hearings-calendar .fc-event {
+  cursor: pointer;
+}
+
+.legal-hearings-calendar .fc .fc-toolbar-title,
+.legal-hearings-calendar .fc .fc-button,
+.legal-hearing-calendar-sidebar,
+.legal-hearing-calendar-sidebar .form-control,
+.legal-hearing-calendar-sidebar .form-select {
+  font-family: var(--font-family-cairo, inherit);
+}
+
+.legal-hearings-calendar .select2-container {
+  width: 100% !important;
+}
+
+.legal-hearing-detail-text {
+  white-space: pre-wrap;
+}
+
+.app-calendar-wrapper .fc-toolbar-chunk {
+  overflow: clip !important;
 }

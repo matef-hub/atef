@@ -36,6 +36,10 @@
           @if ($selectedCase)
             <a href="{{ route('hearings.index') }}" class="btn btn-outline-secondary">عرض جميع الجلسات</a>
           @endif
+          <a href="{{ route('hearing-calendar.index') }}" class="btn btn-outline-primary">
+            <i class="icon-base ti tabler-calendar-event me-1"></i>
+            تقويم الجلسات
+          </a>
           <x-button type="button" onclick="window.location='{{ route('hearings.create', $selectedCase ? ['case' => $selectedCase->id] : []) }}'">
             <i class="icon-base ti tabler-plus me-1"></i>
             تسجيل جلسة

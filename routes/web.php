@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CaseHearingCalendarController;
 use App\Http\Controllers\CaseHearingController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\DashboardController;
@@ -40,6 +41,12 @@ Route::middleware([
             ->where('file', '[^/]+')
             ->name('backup.delete');
         Route::post('/maintenance', [SystemSettingsController::class, 'runMaintenance'])->name('maintenance.run');
+    });
+
+    Route::prefix('hearings-calendar')->name('hearing-calendar.')->controller(CaseHearingCalendarController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/events', 'events')->name('events');
+        Route::post('/hearings', 'store')->name('store');
     });
 
     Route::resource('cases', LegalCaseController::class);
