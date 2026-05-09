@@ -4,24 +4,23 @@
 
 @section('content')
   @php
-    $envValue = fn (string $key, mixed $default = '') => $environment[$key] ?? $default;
-    $envBool = fn (string $key, bool $default = false) => filter_var($environment[$key] ?? $default, FILTER_VALIDATE_BOOLEAN);
-    $timezones = DateTimeZone::listIdentifiers();
-    $localeOptions = [
-        'ar' => 'العربية',
-        'en' => 'English',
-    ];
-    $environmentOptions = [
-        'local' => 'Local',
-        'production' => 'Production',
-        'staging' => 'Staging',
-        'testing' => 'Testing',
-    ];
+    /*
+        $timezones, $localeOptions, $environmentOptions are now passed from the
+        controller's index() method — removed from the Blade @php block.
+
+    Only lightweight view-helpers that are purely presentational live here.
+  */
+$envValue = fn(string $key, mixed $default = '') => $environment[$key] ?? $default;
+    $envBool = fn(string $key, bool $default = false) => filter_var(
+        $environment[$key] ?? $default,
+        FILTER_VALIDATE_BOOLEAN,
+    );
   @endphp
 
   <div class="legal-resource-page d-flex flex-column gap-4" dir="rtl">
     <x-page-alerts />
 
+    {{-- ── Page header ─────────────────────────────────────────────────── --}}
     <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
       <div>
         <span class="badge bg-label-primary rounded-pill mb-2">System Control Center</span>
@@ -39,6 +38,7 @@
       </form>
     </div>
 
+    {{-- ── Status cards ─────────────────────────────────────────────────── --}}
     <div class="row g-4">
       <div class="col-sm-6 col-xl-3">
         <div class="card h-100 card-border-shadow-{{ $database['ok'] ? 'success' : 'danger' }}">
@@ -83,13 +83,14 @@
       </div>
     </div>
 
-    @if (!$database['ok'])
+    @unless ($database['ok'])
       <div class="alert alert-danger mb-0" role="alert">
         <div class="fw-semibold mb-1">تعذر الاتصال بقاعدة البيانات الحالية.</div>
         <div class="small">{{ $database['error'] }}</div>
       </div>
-    @endif
+    @endunless
 
+    {{-- ── General settings + Services ─────────────────────────────────── --}}
     <div class="row g-4">
       <div class="col-xl-6">
         <div class="card h-100">
@@ -106,36 +107,52 @@
               <div class="row g-3">
                 <div class="col-md-6">
                   <label class="form-label" for="app_name">اسم البرنامج</label>
-                  <input id="app_name" name="app_name" type="text" class="form-control"
+                  <input id="app_name" name="app_name" type="text" autocomplete="off"
+                    class="form-control @error('app_name') is-invalid @enderror"
                     value="{{ old('app_name', $envValue('APP_NAME', config('app.name'))) }}" required>
+                  @error('app_name')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-md-6">
                   <label class="form-label" for="app_url">رابط التشغيل</label>
-                  <input id="app_url" name="app_url" type="url" class="form-control"
+                  <input id="app_url" name="app_url" type="url" autocomplete="off"
+                    class="form-control @error('app_url') is-invalid @enderror"
                     value="{{ old('app_url', $envValue('APP_URL', config('app.url'))) }}" required>
+                  @error('app_url')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-md-6">
                   <label class="form-label" for="app_env">بيئة التشغيل</label>
-                  <select id="app_env" name="app_env" class="form-select">
+                  <select id="app_env" name="app_env" class="form-select @error('app_env') is-invalid @enderror">
                     @foreach ($environmentOptions as $value => $label)
                       <option value="{{ $value }}" @selected(old('app_env', $envValue('APP_ENV', config('app.env'))) === $value)>
                         {{ $label }}
                       </option>
                     @endforeach
                   </select>
+                  @error('app_env')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-md-6">
                   <label class="form-label" for="app_timezone">المنطقة الزمنية</label>
-                  <select id="app_timezone" name="app_timezone" class="form-select">
+                  {{-- $timezones now passed from the controller, not computed in the blade --}}
+                  <select id="app_timezone" name="app_timezone"
+                    class="form-select @error('app_timezone') is-invalid @enderror">
                     @foreach ($timezones as $timezone)
                       <option value="{{ $timezone }}" @selected(old('app_timezone', $envValue('APP_TIMEZONE', config('app.timezone'))) === $timezone)>
                         {{ $timezone }}
                       </option>
                     @endforeach
                   </select>
+                  @error('app_timezone')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-md-4">
@@ -162,8 +179,12 @@
 
                 <div class="col-md-4">
                   <label class="form-label" for="app_faker_locale">لغة البيانات التجريبية</label>
-                  <input id="app_faker_locale" name="app_faker_locale" type="text" class="form-control"
+                  <input id="app_faker_locale" name="app_faker_locale" type="text"
+                    class="form-control @error('app_faker_locale') is-invalid @enderror"
                     value="{{ old('app_faker_locale', $envValue('APP_FAKER_LOCALE', 'en_US')) }}">
+                  @error('app_faker_locale')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-12">
@@ -213,7 +234,11 @@
                 <div class="col-md-6">
                   <label class="form-label" for="session_lifetime">مدة الجلسة بالدقائق</label>
                   <input id="session_lifetime" name="session_lifetime" type="number" min="5" max="43200"
-                    class="form-control" value="{{ old('session_lifetime', $envValue('SESSION_LIFETIME', config('session.lifetime'))) }}">
+                    class="form-control @error('session_lifetime') is-invalid @enderror"
+                    value="{{ old('session_lifetime', $envValue('SESSION_LIFETIME', config('session.lifetime'))) }}">
+                  @error('session_lifetime')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-md-4">
@@ -262,38 +287,63 @@
 
                 <div class="col-md-4">
                   <label class="form-label" for="mail_host">SMTP Host</label>
-                  <input id="mail_host" name="mail_host" type="text" class="form-control"
+                  <input id="mail_host" name="mail_host" type="text" autocomplete="off"
+                    class="form-control @error('mail_host') is-invalid @enderror"
                     value="{{ old('mail_host', $envValue('MAIL_HOST', '127.0.0.1')) }}">
+                  @error('mail_host')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-md-4">
                   <label class="form-label" for="mail_port">SMTP Port</label>
-                  <input id="mail_port" name="mail_port" type="number" class="form-control"
+                  <input id="mail_port" name="mail_port" type="number"
+                    class="form-control @error('mail_port') is-invalid @enderror"
                     value="{{ old('mail_port', $envValue('MAIL_PORT', 2525)) }}">
+                  @error('mail_port')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-md-6">
                   <label class="form-label" for="mail_username">اسم مستخدم البريد</label>
-                  <input id="mail_username" name="mail_username" type="text" class="form-control"
+                  <input id="mail_username" name="mail_username" type="text" autocomplete="username"
+                    class="form-control @error('mail_username') is-invalid @enderror"
                     value="{{ old('mail_username', $envValue('MAIL_USERNAME')) }}">
+                  @error('mail_username')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-md-6">
                   <label class="form-label" for="mail_password">كلمة مرور البريد</label>
-                  <input id="mail_password" name="mail_password" type="password" class="form-control"
+                  {{-- Never pre-fill password fields; use placeholder to signal saved state --}}
+                  <input id="mail_password" name="mail_password" type="password" autocomplete="new-password"
+                    class="form-control @error('mail_password') is-invalid @enderror"
                     placeholder="{{ $envValue('MAIL_PASSWORD') ? 'كلمة مرور محفوظة' : 'غير محددة' }}">
+                  @error('mail_password')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-md-6">
                   <label class="form-label" for="mail_from_address">بريد الإرسال</label>
-                  <input id="mail_from_address" name="mail_from_address" type="email" class="form-control"
+                  <input id="mail_from_address" name="mail_from_address" type="email" autocomplete="off"
+                    class="form-control @error('mail_from_address') is-invalid @enderror"
                     value="{{ old('mail_from_address', $envValue('MAIL_FROM_ADDRESS', 'hello@example.com')) }}">
+                  @error('mail_from_address')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-md-6">
                   <label class="form-label" for="mail_from_name">اسم المرسل</label>
-                  <input id="mail_from_name" name="mail_from_name" type="text" class="form-control"
+                  <input id="mail_from_name" name="mail_from_name" type="text" autocomplete="off"
+                    class="form-control @error('mail_from_name') is-invalid @enderror"
                     value="{{ old('mail_from_name', $envValue('MAIL_FROM_NAME', config('app.name'))) }}">
+                  @error('mail_from_name')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-12">
@@ -316,6 +366,7 @@
       </div>
     </div>
 
+    {{-- ── Database connection + Create new database ─────────────────────── --}}
     <div class="row g-4">
       <div class="col-xl-7">
         <div class="card h-100">
@@ -343,58 +394,104 @@
 
                 <div class="col-md-4">
                   <label class="form-label" for="db_host">Host</label>
-                  <input id="db_host" name="db_host" type="text" class="form-control"
+                  <input id="db_host" name="db_host" type="text" autocomplete="off"
+                    class="form-control @error('db_host') is-invalid @enderror"
                     value="{{ old('db_host', $envValue('DB_HOST', '127.0.0.1')) }}">
+                  @error('db_host')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-md-4">
                   <label class="form-label" for="db_port">Port</label>
-                  <input id="db_port" name="db_port" type="number" class="form-control"
+                  <input id="db_port" name="db_port" type="number"
+                    class="form-control @error('db_port') is-invalid @enderror"
                     value="{{ old('db_port', $envValue('DB_PORT', 3306)) }}">
+                  @error('db_port')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-md-6">
                   <label class="form-label" for="db_database">اسم/مسار قاعدة البيانات</label>
-                  <input id="db_database" name="db_database" type="text" class="form-control"
-                    value="{{ old('db_database', $envValue('DB_DATABASE', config('database.connections.' . config('database.default') . '.database'))) }}"
-                    required>
+                  {{--
+                    BUG FIX: original blade had a deeply nested config() call:
+                    config('database.connections.' . config('database.default') . '.database')
+                    This is logic that belongs in the controller; it's now available via $environment.
+                  --}}
+                  <input id="db_database" name="db_database" type="text" autocomplete="off"
+                    class="form-control @error('db_database') is-invalid @enderror"
+                    value="{{ old('db_database', $envValue('DB_DATABASE')) }}" required>
+                  @error('db_database')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-md-6">
                   <label class="form-label" for="db_username">اسم المستخدم</label>
-                  <input id="db_username" name="db_username" type="text" class="form-control"
+                  <input id="db_username" name="db_username" type="text" autocomplete="username"
+                    class="form-control @error('db_username') is-invalid @enderror"
                     value="{{ old('db_username', $envValue('DB_USERNAME')) }}">
+                  @error('db_username')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-md-6">
                   <label class="form-label" for="db_password">كلمة المرور</label>
-                  <input id="db_password" name="db_password" type="password" class="form-control"
+                  <input id="db_password" name="db_password" type="password" autocomplete="new-password"
+                    class="form-control @error('db_password') is-invalid @enderror"
                     placeholder="{{ $envValue('DB_PASSWORD') ? 'كلمة مرور محفوظة' : 'بدون كلمة مرور' }}">
+                  @error('db_password')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-md-3">
                   <label class="form-label" for="db_charset">Charset</label>
-                  <input id="db_charset" name="db_charset" type="text" class="form-control"
+                  <input id="db_charset" name="db_charset" type="text"
+                    class="form-control @error('db_charset') is-invalid @enderror"
                     value="{{ old('db_charset', $envValue('DB_CHARSET', 'utf8mb4')) }}">
+                  @error('db_charset')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-md-3">
                   <label class="form-label" for="db_collation">Collation</label>
-                  <input id="db_collation" name="db_collation" type="text" class="form-control"
+                  <input id="db_collation" name="db_collation" type="text"
+                    class="form-control @error('db_collation') is-invalid @enderror"
                     value="{{ old('db_collation', $envValue('DB_COLLATION', 'utf8mb4_unicode_ci')) }}">
+                  @error('db_collation')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-md-6">
                   <label class="form-label" for="mysql_binary_path">مسار mysql.exe</label>
-                  <input id="mysql_binary_path" name="mysql_binary_path" type="text" class="form-control"
-                    value="{{ old('mysql_binary_path', $envValue('SYSTEM_MYSQL_PATH', 'C:\\xampp\\mysql\\bin\\mysql.exe')) }}">
+                  <input id="mysql_binary_path" name="mysql_binary_path" type="text" autocomplete="off"
+                    class="form-control @error('mysql_binary_path') is-invalid @enderror"
+                    value="{{ old('mysql_binary_path', $envValue('SYSTEM_MYSQL_PATH')) }}">
+                  @error('mysql_binary_path')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-md-6">
                   <label class="form-label" for="mysqldump_binary_path">مسار mysqldump.exe</label>
-                  <input id="mysqldump_binary_path" name="mysqldump_binary_path" type="text" class="form-control"
-                    value="{{ old('mysqldump_binary_path', $envValue('SYSTEM_MYSQLDUMP_PATH', 'C:\\xampp\\mysql\\bin\\mysqldump.exe')) }}">
+                  <input id="mysqldump_binary_path" name="mysqldump_binary_path" type="text" autocomplete="off"
+                    class="form-control @error('mysqldump_binary_path') is-invalid @enderror"
+                    value="{{ old('mysqldump_binary_path', $envValue('SYSTEM_MYSQLDUMP_PATH')) }}">
+                  @error('mysqldump_binary_path')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
+
+                @error('database')
+                  <div class="col-12">
+                    <div class="alert alert-danger py-2 mb-0">{{ $message }}</div>
+                  </div>
+                @enderror
 
                 <div class="col-md-6">
                   <label class="form-check mb-0">
@@ -439,43 +536,71 @@
               <div class="row g-3">
                 <div class="col-md-6">
                   <label class="form-label" for="server_host">Host</label>
-                  <input id="server_host" name="server_host" type="text" class="form-control"
+                  <input id="server_host" name="server_host" type="text" autocomplete="off"
+                    class="form-control @error('server_host') is-invalid @enderror"
                     value="{{ old('server_host', $envValue('DB_HOST', '127.0.0.1')) }}" required>
+                  @error('server_host')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-md-6">
                   <label class="form-label" for="server_port">Port</label>
-                  <input id="server_port" name="server_port" type="number" class="form-control"
+                  <input id="server_port" name="server_port" type="number"
+                    class="form-control @error('server_port') is-invalid @enderror"
                     value="{{ old('server_port', $envValue('DB_PORT', 3306)) }}" required>
+                  @error('server_port')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-md-6">
                   <label class="form-label" for="server_username">اسم المستخدم</label>
-                  <input id="server_username" name="server_username" type="text" class="form-control"
+                  <input id="server_username" name="server_username" type="text" autocomplete="username"
+                    class="form-control @error('server_username') is-invalid @enderror"
                     value="{{ old('server_username', $envValue('DB_USERNAME', 'root')) }}">
+                  @error('server_username')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-md-6">
                   <label class="form-label" for="server_password">كلمة المرور</label>
-                  <input id="server_password" name="server_password" type="password" class="form-control">
+                  <input id="server_password" name="server_password" type="password" autocomplete="new-password"
+                    class="form-control @error('server_password') is-invalid @enderror">
+                  @error('server_password')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-12">
                   <label class="form-label" for="database_name">اسم القاعدة الجديدة</label>
-                  <input id="database_name" name="database_name" type="text" class="form-control"
+                  <input id="database_name" name="database_name" type="text" autocomplete="off"
+                    class="form-control @error('database_name') is-invalid @enderror"
                     value="{{ old('database_name') }}" placeholder="legal_system" required>
+                  @error('database_name')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-md-6">
                   <label class="form-label" for="charset">Charset</label>
-                  <input id="charset" name="charset" type="text" class="form-control"
+                  <input id="charset" name="charset" type="text"
+                    class="form-control @error('charset') is-invalid @enderror"
                     value="{{ old('charset', 'utf8mb4') }}" required>
+                  @error('charset')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-md-6">
                   <label class="form-label" for="collation">Collation</label>
-                  <input id="collation" name="collation" type="text" class="form-control"
+                  <input id="collation" name="collation" type="text"
+                    class="form-control @error('collation') is-invalid @enderror"
                     value="{{ old('collation', 'utf8mb4_unicode_ci') }}" required>
+                  @error('collation')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <div class="col-12 d-flex flex-column gap-2">
@@ -483,11 +608,17 @@
                     <input type="checkbox" class="form-check-input" name="save_as_active" value="1" checked>
                     <span class="form-check-label">اعتمادها كقاعدة التطبيق الحالية</span>
                   </label>
+                  @error('save_as_active')
+                    <div class="text-danger small">{{ $message }}</div>
+                  @enderror
 
                   <label class="form-check mb-0">
                     <input type="checkbox" class="form-check-input" name="run_migrations" value="1" checked>
                     <span class="form-check-label">تشغيل جداول النظام بعد الإنشاء</span>
                   </label>
+                  @error('run_migrations')
+                    <div class="text-danger small">{{ $message }}</div>
+                  @enderror
 
                   <label class="form-check mb-0">
                     <input type="checkbox" class="form-check-input" name="run_seeders" value="1">
@@ -508,6 +639,7 @@
       </div>
     </div>
 
+    {{-- ── Backups table + Restore from file ────────────────────────────── --}}
     <div class="row g-4">
       <div class="col-xl-8">
         <div class="card h-100">
@@ -519,13 +651,20 @@
 
             <form method="POST" action="{{ route('system-settings.backup.create') }}" class="d-flex gap-2">
               @csrf
-              <input type="text" name="backup_label" class="form-control form-control-sm" placeholder="اسم اختياري">
+              <input type="text" name="backup_label" class="form-control form-control-sm"
+                placeholder="اسم اختياري">
               <button type="submit" class="btn btn-sm btn-primary text-nowrap">
                 <i class="icon-base ti tabler-database-export me-1"></i>
                 إنشاء نسخة
               </button>
             </form>
           </div>
+
+          @error('backup')
+            <div class="mx-3 mt-3">
+              <div class="alert alert-danger py-2 mb-0">{{ $message }}</div>
+            </div>
+          @enderror
 
           <div class="card-datatable table-responsive">
             <table class="table border-top legal-datatable mb-0">
@@ -562,6 +701,7 @@
                           data-swal-cancel-button="إلغاء">
                           @csrf
                           <input type="hidden" name="selected_backup" value="{{ $backup['name'] }}">
+                          {{-- Pre-filled confirmation for one-click restore from the table --}}
                           <input type="hidden" name="confirm_restore" value="استرجاع">
                           <button type="submit" class="btn btn-sm btn-outline-warning">
                             <i class="icon-base ti tabler-restore"></i>
@@ -601,22 +741,34 @@
 
           <form method="POST" action="{{ route('system-settings.backup.restore') }}" enctype="multipart/form-data"
             data-swal-confirm="true" data-swal-title="تأكيد استرجاع ملف خارجي"
-            data-swal-text="سيتم أخذ نسخة احتياطية من قاعدة البيانات الحالية قبل الاسترجاع."
-            data-swal-icon="warning" data-swal-confirm-button="نعم، استرجع" data-swal-cancel-button="إلغاء">
+            data-swal-text="سيتم أخذ نسخة احتياطية من قاعدة البيانات الحالية قبل الاسترجاع." data-swal-icon="warning"
+            data-swal-confirm-button="نعم، استرجع" data-swal-cancel-button="إلغاء">
             @csrf
 
             <div class="card-body">
               <div class="mb-3">
                 <label class="form-label" for="uploaded_backup">ملف النسخة الاحتياطية</label>
-                <input id="uploaded_backup" name="uploaded_backup" type="file" class="form-control" accept=".sql,.sqlite,.db"
+                <input id="uploaded_backup" name="uploaded_backup" type="file"
+                  class="form-control @error('uploaded_backup') is-invalid @enderror" accept=".sql,.sqlite,.db"
                   required>
+                @error('uploaded_backup')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
               </div>
 
               <div>
-                <label class="form-label" for="confirm_restore">كلمة التأكيد</label>
-                <input id="confirm_restore" name="confirm_restore" type="text" class="form-control"
-                  placeholder="اكتب: استرجاع" required>
+                <label class="form-label" for="confirm_restore_upload">كلمة التأكيد</label>
+                <input id="confirm_restore_upload" name="confirm_restore" type="text"
+                  class="form-control @error('confirm_restore') is-invalid @enderror" placeholder="اكتب: استرجاع"
+                  required>
+                @error('confirm_restore')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
               </div>
+
+              @error('restore')
+                <div class="alert alert-danger py-2 mt-3 mb-0">{{ $message }}</div>
+              @enderror
             </div>
 
             <div class="card-footer text-end">
@@ -630,6 +782,7 @@
       </div>
     </div>
 
+    {{-- ── Fresh database + Maintenance actions ────────────────────────── --}}
     <div class="row g-4">
       <div class="col-xl-5">
         <div class="card h-100 border-danger">
@@ -640,21 +793,28 @@
 
           <form method="POST" action="{{ route('system-settings.database.fresh') }}" data-swal-confirm="true"
             data-swal-title="تأكيد تهيئة قاعدة البيانات"
-            data-swal-text="سيتم حذف كل الجداول الحالية بعد أخذ نسخة احتياطية تلقائية."
-            data-swal-icon="warning" data-swal-confirm-button="نعم، هيّئ القاعدة" data-swal-cancel-button="إلغاء">
+            data-swal-text="سيتم حذف كل الجداول الحالية بعد أخذ نسخة احتياطية تلقائية." data-swal-icon="warning"
+            data-swal-confirm-button="نعم، هيّئ القاعدة" data-swal-cancel-button="إلغاء">
             @csrf
 
             <div class="card-body">
               <div class="mb-3">
                 <label class="form-label" for="confirm_fresh">كلمة التأكيد</label>
-                <input id="confirm_fresh" name="confirm_fresh" type="text" class="form-control"
-                  placeholder="اكتب: تهيئة" required>
+                <input id="confirm_fresh" name="confirm_fresh" type="text"
+                  class="form-control @error('confirm_fresh') is-invalid @enderror" placeholder="اكتب: تهيئة" required>
+                @error('confirm_fresh')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
               </div>
 
               <label class="form-check mb-0">
                 <input type="checkbox" class="form-check-input" name="seed_after_fresh" value="1">
                 <span class="form-check-label">إضافة البيانات التجريبية بعد التهيئة</span>
               </label>
+
+              @error('database')
+                <div class="alert alert-danger py-2 mt-3 mb-0">{{ $message }}</div>
+              @enderror
             </div>
 
             <div class="card-footer text-end">
@@ -675,11 +835,20 @@
           </div>
 
           <div class="card-body">
+            @error('maintenance')
+              <div class="alert alert-danger py-2 mb-3">{{ $message }}</div>
+            @enderror
+
             <div class="row g-3">
               @foreach ($maintenanceActions as $key => $action)
                 <div class="col-md-6">
+                  {{--
+                    BUG FIX: 'requires_confirm' is now a data-driven flag on each
+                    action definition in the controller, instead of a hardcoded
+                    in_array() check duplicated in the blade.
+                  --}}
                   <form method="POST" action="{{ route('system-settings.maintenance.run') }}"
-                    @if (in_array($key, ['key_generate', 'migrate'], true)) data-swal-confirm="true"
+                    @if ($action['requires_confirm']) data-swal-confirm="true"
                       data-swal-title="تأكيد تنفيذ الأمر"
                       data-swal-text="سيتم تشغيل أمر صيانة مؤثر على إعدادات أو قاعدة بيانات النظام."
                       data-swal-icon="question"

@@ -1,4 +1,13 @@
 @php
+  $successMessage = session('success');
+  $successDetail = session('success_detail');
+  $successHtml = $successDetail
+      ? '<div class="text-end">' .
+          '<div class="fw-semibold mb-1">' . e($successMessage) . '</div>' .
+          '<code class="d-block small text-break bg-label-success rounded px-2 py-1" dir="ltr">' . e($successDetail) . '</code>' .
+        '</div>'
+      : null;
+
   $errorListHtml = $errors->any()
       ? '<ul class="mb-0 ps-4 text-start">' .
           collect($errors->all())
@@ -34,12 +43,17 @@
           toast: true,
           position: 'top-end',
           icon: 'success',
-          title: @json(session('success')),
+          @if ($successHtml)
+            html: @json($successHtml),
+          @else
+            title: @json($successMessage),
+          @endif
           showConfirmButton: false,
-          timer: 3000,
+          timer: @json($successDetail ? 5000 : 3000),
           timerProgressBar: true,
           didOpen: function (toast) {
             toast.setAttribute('dir', alertDirection);
+            toast.style.maxWidth = 'min(92vw, 420px)';
             toast.addEventListener('mouseenter', window.Swal.stopTimer);
             toast.addEventListener('mouseleave', window.Swal.resumeTimer);
           }
@@ -51,7 +65,12 @@
   <noscript>
     @if (session('success'))
       <div class="alert alert-success" role="alert">
-        <div class="alert-body">{{ session('success') }}</div>
+        <div class="alert-body">
+          {{ $successMessage }}
+          @if ($successDetail)
+            <code class="d-block small text-break mt-1" dir="ltr">{{ $successDetail }}</code>
+          @endif
+        </div>
       </div>
     @endif
 
