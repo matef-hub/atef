@@ -3,11 +3,7 @@
 @section('title', 'مركز التقارير القانونية')
 
 @section('vendor-style')
-  @vite([
-      'resources/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.scss',
-      'resources/assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.scss',
-      'resources/assets/vendor/libs/flatpickr/flatpickr.scss',
-  ])
+  @vite(['resources/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.scss', 'resources/assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.scss', 'resources/assets/vendor/libs/flatpickr/flatpickr.scss'])
 @endsection
 
 @section('page-style')
@@ -15,10 +11,7 @@
 @endsection
 
 @section('vendor-script')
-  @vite([
-      'resources/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js',
-      'resources/assets/vendor/libs/flatpickr/flatpickr.js',
-  ])
+  @vite(['resources/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js', 'resources/assets/vendor/libs/flatpickr/flatpickr.js'])
 @endsection
 
 @section('page-script')
@@ -27,30 +20,27 @@
 
 @section('content')
   <div class="legal-reports-page d-flex flex-column gap-4" dir="rtl" data-legal-reports-center
-    data-today="{{ $today }}" data-generated-on="{{ $generatedOn }}" data-default-period-from="{{ $defaultPeriodFrom }}"
-    data-default-period-to="{{ $defaultPeriodTo }}">
+    data-today="{{ $today }}" data-generated-on="{{ $generatedOn }}"
+    data-default-period-from="{{ $defaultPeriodFrom }}" data-default-period-to="{{ $defaultPeriodTo }}">
     <x-page-alerts />
 
     <div class="legal-print-header" data-report-print-header>
-      <div class="legal-print-header__title">مكتب الأستاذ محمد عاطف - المحامي</div>
-      <div class="legal-print-header__subtitle">Professional Office Statement</div>
-      <div class="legal-print-header__meta">
-        <span data-report-print-name>تقرير قانوني شامل</span>
-        <span>•</span>
-        <span data-report-print-period>الفترة: {{ $defaultPeriodFrom }} إلى {{ $defaultPeriodTo }}</span>
-        <span>•</span>
-        <span data-report-print-date>تاريخ الإصدار: {{ $generatedOn }}</span>
+      <div class="legal-print-header__label">نوع التقرير</div>
+      <div class="legal-print-header__title" data-report-print-name>تقرير قانوني شامل</div>
+      <div class="legal-print-header__period" data-report-print-period>
+        الفترة: {{ $defaultPeriodFrom }} إلى {{ $defaultPeriodTo }}
       </div>
     </div>
 
-    <div class="d-flex flex-column flex-xl-row align-items-xl-center justify-content-between gap-3"
-      data-report-screen-title>
-      <div>
-        <span class="badge bg-label-primary rounded-pill mb-2">Legal Reports Center</span>
-        <h4 class="mb-1">مركز التقارير القانونية</h4>
-        <p class="mb-0 text-muted">
-          صفحة مخصصة لإعداد تقارير قانونية نصية قابلة للطباعة والتصدير، مع استبعاد كامل لأي حقول مالية أو محاسبية.
-        </p>
+    <div class="legal-report-hero" data-report-screen-title>
+      <div class="legal-report-hero__content">
+        <span class="legal-report-hero__eyebrow">Legal Reports Center</span>
+        <h4>مركز التقارير القانونية</h4>
+        <div class="legal-report-hero__meta">
+          <span class="legal-report-hero__pill" data-report-period-badge>
+            الفترة الحالية: {{ $defaultPeriodFrom }} إلى {{ $defaultPeriodTo }}
+          </span>
+        </div>
       </div>
 
       <div class="d-flex flex-wrap gap-2 legal-report-actions" data-report-actions>
@@ -75,15 +65,14 @@
 
     <div class="card legal-report-filter-card" data-report-filters>
       <div class="card-header">
-        <h5 class="card-title mb-1">تصفية مباشرة للتقارير</h5>
-        <p class="card-subtitle mb-0">تتحدث النتائج والملخصات تلقائياً أثناء الكتابة أو تغيير نوع التقرير والفترة الزمنية.</p>
+        <h5 class="card-title mb-0">تصفية مباشرة للتقارير</h5>
       </div>
 
       <div class="card-body">
         <div class="row g-3 align-items-end">
           <div class="col-lg-3 col-md-6">
             <label class="form-label" for="legalReportType">نوع التقرير</label>
-            <select id="legalReportType" class="form-select" data-report-filter="type">
+            <select class="form-select" id="legalReportType" data-report-filter="type">
               <option value="all">جميع السجلات القانونية</option>
               <option value="general_contracts">العقود العامة</option>
               <option value="contractor_specific">تقرير حسب المقاول</option>
@@ -107,8 +96,8 @@
             <label class="form-label" for="legalReportSearch">بحث بالكلمات المفتاحية</label>
             <div class="input-group input-group-merge">
               <span class="input-group-text"><i class="icon-base ti tabler-search"></i></span>
-              <input id="legalReportSearch" type="search" class="form-control" placeholder="رقم العقد، المقاول، الوحدة..."
-                autocomplete="off" data-report-filter="keyword" />
+              <input id="legalReportSearch" type="search" class="form-control"
+                placeholder="رقم العقد، المقاول، الوحدة..." autocomplete="off" data-report-filter="keyword" />
             </div>
           </div>
         </div>
@@ -117,76 +106,51 @@
 
     <div class="row g-4">
       <div class="col-sm-6 col-xl-3">
-        <div class="card h-100 card-border-shadow-primary" data-report-summary-card>
+        <div class="card h-100 legal-report-stat-card legal-report-stat-card--primary" data-report-summary-card>
           <div class="card-body">
-            <span class="badge bg-label-primary rounded-pill mb-2">النتائج الحالية</span>
-            <h3 class="mb-1" data-report-stat="total">0</h3>
-            <p class="mb-0 text-muted">عدد السجلات المعروضة بعد تطبيق البحث والتصفية المباشرة.</p>
+            <span class="legal-report-stat-card__label">النتائج الحالية</span>
+            <h3 class="legal-report-stat-card__value" data-report-stat="total">0</h3>
           </div>
         </div>
       </div>
 
       <div class="col-sm-6 col-xl-3">
-        <div class="card h-100 card-border-shadow-success" data-report-summary-card>
+        <div class="card h-100 legal-report-stat-card legal-report-stat-card--success" data-report-summary-card>
           <div class="card-body">
-            <span class="badge bg-label-success rounded-pill mb-2">العقود العامة</span>
-            <h3 class="mb-1" data-report-stat="contracts">0</h3>
-            <p class="mb-0 text-muted">العقود التي تركز على الحالة القانونية والتواريخ والتفاصيل التعاقدية فقط.</p>
+            <span class="legal-report-stat-card__label">العقود العامة</span>
+            <h3 class="legal-report-stat-card__value" data-report-stat="contracts">0</h3>
           </div>
         </div>
       </div>
 
       <div class="col-sm-6 col-xl-3">
-        <div class="card h-100 card-border-shadow-danger" data-report-summary-card>
+        <div class="card h-100 legal-report-stat-card legal-report-stat-card--danger" data-report-summary-card>
           <div class="card-body">
-            <span class="badge bg-label-danger rounded-pill mb-2">الإيجارات المنتهية</span>
-            <h3 class="mb-1" data-report-stat="expired">0</h3>
-            <p class="mb-0 text-muted">عقود الإيجار التي تجاوز تاريخ انتهائها تاريخ اليوم وتحتاج متابعة قانونية.</p>
+            <span class="legal-report-stat-card__label">الإيجارات المنتهية</span>
+            <h3 class="legal-report-stat-card__value" data-report-stat="expired">0</h3>
           </div>
         </div>
       </div>
 
       <div class="col-sm-6 col-xl-3">
-        <div class="card h-100 card-border-shadow-info" data-report-summary-card>
+        <div class="card h-100 legal-report-stat-card legal-report-stat-card--info" data-report-summary-card>
           <div class="card-body">
-            <span class="badge bg-label-info rounded-pill mb-2">المقاولون النشطون</span>
-            <h3 class="mb-1" data-report-stat="contractors">0</h3>
-            <p class="mb-0 text-muted">عدد معرفات المقاولين الظاهرة داخل العقود الحالية في التقرير.</p>
+            <span class="legal-report-stat-card__label">المقاولون النشطون</span>
+            <h3 class="legal-report-stat-card__value" data-report-stat="contractors">0</h3>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-report-contractor-card>
       <div class="card-header">
-        <h5 class="card-title mb-1">البيان النصي للمكتب</h5>
-        <p class="card-subtitle mb-0">ملخص احترافي يتبدل وفق نتائج البحث الحالية ويظهر داخل نسخة الطباعة أيضاً.</p>
-      </div>
-
-      <div class="card-body">
-        <div class="legal-report-statement" data-report-statement>
-          <p class="mb-0 text-muted">جارٍ تجهيز البيان القانوني الحالي...</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
-        <div>
-          <h5 class="card-title mb-1">ملخص المقاولين</h5>
-          <p class="card-subtitle mb-0">يتم التجميع حسب معرف المقاول المشتق من بيانات المقاول الحالية داخل العقود.</p>
-        </div>
-
-        <span class="badge bg-label-secondary align-self-start align-self-lg-center" data-report-period-badge>
-          الفترة الحالية: {{ $defaultPeriodFrom }} إلى {{ $defaultPeriodTo }}
-        </span>
+        <h5 class="card-title mb-0">ملخص المقاولين</h5>
       </div>
 
       <div class="card-datatable table-responsive">
-        <table class="table border-top legal-report-summary-table mb-0">
+        <table class="table legal-report-summary-table mb-0">
           <thead>
             <tr>
-              <th>معرف المقاول</th>
               <th>اسم المقاول</th>
               <th>عدد العقود</th>
               <th>آخر تاريخ عقد</th>
@@ -194,27 +158,24 @@
           </thead>
           <tbody data-contractor-summary-body>
             <tr>
-              <td colspan="4" class="text-center text-muted py-4">لا توجد بيانات متاحة حالياً.</td>
+              <td colspan="3" class="text-center text-muted py-4">لا توجد بيانات متاحة حالياً.</td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card legal-report-results-card">
       <div class="card-header d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
-        <div>
-          <h5 class="card-title mb-1">نتائج التقرير</h5>
-          <p class="card-subtitle mb-0">جدول عربي بعرض كامل ومهيأ للطباعة والتصدير وفق الفلاتر الحالية.</p>
-        </div>
+        <h5 class="card-title mb-0">نتائج التقرير</h5>
 
-        <span class="badge bg-label-primary align-self-start align-self-lg-center" data-report-results-badge>
+        <span class="legal-report-results-badge align-self-start align-self-lg-center" data-report-results-badge>
           0 سجل
         </span>
       </div>
 
       <div class="card-datatable table-responsive" data-report-table-wrapper>
-        <table class="table border-top legal-report-results-table w-100" data-report-table></table>
+        <table class="table legal-report-results-table w-100" data-report-table></table>
       </div>
     </div>
 

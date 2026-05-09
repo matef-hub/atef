@@ -36,10 +36,10 @@ class LegalReportController extends Controller
 
         return view('content.reports.legal-center', [
             'reportRows' => $reportRows,
-            'today' => $today->format('Y-m-d'),
+            'today' =>  now()->format('Y-m-d'),
             'generatedOn' => now()->format('Y-m-d'),
-            'defaultPeriodFrom' => $availableDates->first() ?? $today->format('Y-m-d'),
-            'defaultPeriodTo' => $availableDates->last() ?? $today->format('Y-m-d'),
+            'defaultPeriodFrom' => now()->startOfMonth()->format('Y-m-d'),
+            'defaultPeriodTo' => now()->format('Y-m-d'),
         ]);
     }
 
@@ -57,9 +57,6 @@ class LegalReportController extends Controller
 
         $details = collect([
             $contract->proje_data ?: null,
-            $signatureSummary->isNotEmpty()
-                ? 'التوقيعات: ' . $signatureSummary->implode(' - ')
-                : 'لا توجد توقيعات مسجلة',
         ])->filter();
 
         return [
@@ -76,6 +73,9 @@ class LegalReportController extends Controller
             'status_class' => $status['class'],
             'start_date' => optional($contract->Esnad_date)->format('Y-m-d'),
             'end_date' => optional($contract->Contar_date)->format('Y-m-d'),
+            'signatures' => $signatureSummary->isNotEmpty()
+                ? $signatureSummary->implode(' - ')
+                : 'لا توجد توقيعات مسجلة',
             'filter_date' => $filterDate,
             'sort_date' => $filterDate,
             'is_expired' => false,
@@ -126,6 +126,7 @@ class LegalReportController extends Controller
             'status_class' => $isExpired ? 'danger' : 'success',
             'start_date' => optional($rent->date_sign)->format('Y-m-d'),
             'end_date' => optional($rent->date_end)->format('Y-m-d'),
+            'signatures' => '—',
             'filter_date' => $filterDate,
             'sort_date' => $filterDate,
             'is_expired' => $isExpired,

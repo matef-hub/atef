@@ -57,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initLegalMultiSelects();
   initLegalDashboardCharts();
   initContractFileStages();
+  initDocumentPreviewModal();
   initLegalDropzones();
   initLegalSweetAlertForms();
   initLegalCaseWizards();
@@ -178,7 +179,9 @@ function initLegalDatePickers() {
       altInput: true,
       altFormat: 'j F Y',
       locale: Arabic,
-      monthSelectorType: 'static',
+      weekNumbers: true,
+      allowInput: true,
+      monthSelectorType: 'dropdown',
       static: true
     });
 
@@ -354,8 +357,7 @@ function initLegalCaseWizards() {
       });
     };
 
-    const getSelectedType = () =>
-      form.querySelector('[data-case-type-input]:checked')?.value || 'civil';
+    const getSelectedType = () => form.querySelector('[data-case-type-input]:checked')?.value || 'civil';
 
     const getFieldValue = fieldName => {
       const activeField = [...form.querySelectorAll(`[name="${fieldName}"]`)].find(field => !field.disabled);
@@ -536,9 +538,7 @@ function initLegalDashboardCharts() {
   const borderColor = config.colors.borderColor;
   const primaryColor = config.colors.primary;
   const primarySubtleColor =
-    typeof window.Helpers !== 'undefined'
-      ? window.Helpers.getCssVar('primary-bg-subtle')
-      : config.colors.primary;
+    typeof window.Helpers !== 'undefined' ? window.Helpers.getCssVar('primary-bg-subtle') : config.colors.primary;
 
   const chart = new window.ApexCharts(chartElement, {
     chart: {
@@ -770,6 +770,83 @@ function initContractFileStages() {
 }
 
 // ---------------------------------------------------------------------------
+// Documents index preview modal
+// ---------------------------------------------------------------------------
+
+function initDocumentPreviewModal() {
+  if (typeof window.bootstrap === 'undefined') {
+    return;
+  }
+
+  const modalElement = document.querySelector('[data-document-preview-modal]');
+
+  if (!modalElement || modalElement.dataset.documentPreviewReady === 'true') {
+    return;
+  }
+
+  const previewCard = modalElement.querySelector('[data-document-preview-stage]');
+  const titleElement = modalElement.querySelector('[data-document-preview-title]');
+  const defaultTitle = modalElement.dataset.previewDefaultTitle || 'معاينة الملف';
+
+  if (!previewCard || !titleElement) {
+    return;
+  }
+
+  const modal = window.bootstrap.Modal.getOrCreateInstance(modalElement);
+  let activeUrl = '';
+  let activeExtension = '';
+
+  document.addEventListener('click', event => {
+    const trigger = event.target.closest('[data-document-preview-trigger]');
+
+    if (!trigger) {
+      return;
+    }
+
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      return;
+    }
+
+    const url = trigger.dataset.previewUrl || trigger.getAttribute('href') || '';
+
+    if (!url) {
+      return;
+    }
+
+    event.preventDefault();
+
+    activeUrl = url;
+    activeExtension = (trigger.dataset.previewExtension || getFileExtensionFromUrl(url)).toLowerCase();
+    titleElement.textContent = trigger.dataset.previewTitle || defaultTitle;
+
+    modal.show(trigger);
+  });
+
+  modalElement.addEventListener('show.bs.modal', () => {
+    if (!activeUrl) {
+      renderEmptyPreview(previewCard);
+      return;
+    }
+
+    if (activeExtension && activeExtension !== 'pdf') {
+      renderUnsupportedPreview(previewCard);
+      return;
+    }
+
+    renderPdfPreview(previewCard, activeUrl);
+  });
+
+  modalElement.addEventListener('hidden.bs.modal', () => {
+    activeUrl = '';
+    activeExtension = '';
+    titleElement.textContent = defaultTitle;
+    renderEmptyPreview(previewCard);
+  });
+
+  modalElement.dataset.documentPreviewReady = 'true';
+}
+
+// ---------------------------------------------------------------------------
 // Dropzones
 // ---------------------------------------------------------------------------
 
@@ -968,6 +1045,18 @@ function getFileExtension(filename) {
   return match ? match[1].toLowerCase() : '';
 }
 
+function getFileExtensionFromUrl(url) {
+  if (!url || typeof url !== 'string') {
+    return '';
+  }
+
+  try {
+    return getFileExtension(new URL(url, window.location.origin).pathname);
+  } catch (error) {
+    return getFileExtension(url.split('#')[0].split('?')[0]);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Dropzone preview helpers
 // ---------------------------------------------------------------------------
@@ -1149,7 +1238,7 @@ function buildPdfViewerUrl(url) {
   if (!url) return url;
   if (url.startsWith('blob:')) return url;
   if (url.includes('#')) return url;
-  return `${url}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`;
+  return `${url}#toolbar=1&navpanes=0&scrollbar=0&view=FitH`;
 }
 
 import.meta.glob([

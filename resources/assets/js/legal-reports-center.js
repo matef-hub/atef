@@ -80,7 +80,7 @@ function initLegalReportsCenter(root) {
     columns: buildColumns(),
     order: [],
     autoWidth: false,
-    responsive: true,
+    responsive: false,
     pageLength: 10,
     searching: false,
     language: REPORT_DATA_TABLE_LANGUAGE,
@@ -123,14 +123,11 @@ function initLegalReportsCenter(root) {
     filteredRows: [],
     table: dataTable,
     filters,
-    title: root.querySelector('[data-report-print-name]'),
     period: root.querySelector('[data-report-period-badge]'),
     resultsBadge: root.querySelector('[data-report-results-badge]'),
-    statement: root.querySelector('[data-report-statement]'),
     contractorSummaryBody: root.querySelector('[data-contractor-summary-body]'),
     printTitle: root.querySelector('[data-report-print-name]'),
     printPeriod: root.querySelector('[data-report-print-period]'),
-    printDate: root.querySelector('[data-report-print-date]'),
     statTotal: root.querySelector('[data-report-stat="total"]'),
     statContracts: root.querySelector('[data-report-stat="contracts"]'),
     statExpired: root.querySelector('[data-report-stat="expired"]'),
@@ -151,6 +148,7 @@ function normalizeRow(row) {
     ...row,
     start_date: row.start_date || '',
     end_date: row.end_date || '',
+    signatures: row.signatures || '—',
     filter_date: row.filter_date || '',
     filterDateObject: filterDate,
     contractor_id: row.contractor_id || 'CTR-UNASSIGNED',
@@ -192,13 +190,13 @@ function buildColumns() {
       data: null,
       render(data, type, row) {
         if (type !== 'display') {
-          return [row.contractor_id, row.contractor_name, row.parties].filter(Boolean).join(' - ');
+          return [row.contractor_name, row.parties].filter(Boolean).join(' - ');
         }
 
         return `
           <div class="legal-report-cell">
             <span class="legal-report-cell__title">${escapeHtml(row.contractor_name)}</span>
-            <span class="legal-report-cell__meta">${escapeHtml(row.contractor_id)} • ${escapeHtml(row.parties || 'غير محدد')}</span>
+            <span class="legal-report-cell__meta">${escapeHtml(row.parties || 'غير محدد')}</span>
           </div>
         `;
       }
@@ -224,21 +222,10 @@ function buildColumns() {
       }
     },
     {
-      title: 'تاريخ النهاية / العقد',
-      data: 'end_date',
-      className: 'text-nowrap',
+      title: 'التوقيعات',
+      data: 'signatures',
       render(data, type) {
         return type === 'display' ? escapeHtml(data || '—') : data || '';
-      }
-    },
-    {
-      title: 'البيان النصي',
-      data: 'text_report',
-      render(data, type) {
-        const safeData = data || 'لا يوجد بيان نصي إضافي';
-        return type === 'display'
-          ? `<span class="legal-report-inline-text">${escapeHtml(safeData)}</span>`
-          : safeData;
       }
     }
   ];
@@ -321,7 +308,6 @@ function applyFilters(state) {
 
   decorateReportDataTableUi(state.root);
   updateSummaryCards(state, filteredRows);
-  updateStatement(state, filteredRows, type, from, to);
   updateContractorSummary(state, filteredRows);
   updatePrintMeta(state, filteredRows, type, from, to);
 }
@@ -409,39 +395,6 @@ function updateSummaryCards(state, rows) {
   }
 }
 
-function updateStatement(state, rows, type, from, to) {
-  if (!state.statement) {
-    return;
-  }
-
-  const contractRows = rows.filter(row => row.record_type === 'contract');
-  const leaseRows = rows.filter(row => row.record_type === 'lease');
-  const expiredLeaseRows = leaseRows.filter(row => row.is_expired);
-  const completedContracts = contractRows.filter(row => row.status === 'مكتمل').length;
-  const pendingContracts = contractRows.filter(row => row.status === 'قيد الاستكمال').length;
-  const newContracts = contractRows.filter(row => row.status === 'جديد').length;
-  const visiblePeriod = resolvePeriodLabel(rows, from, to);
-  const reportTypeLabel = REPORT_TYPE_LABELS[type] || REPORT_TYPE_LABELS.all;
-
-  state.statement.innerHTML = `
-    <p class="mb-2">
-      يوضح هذا البيان المكتبي نتائج <strong>${escapeHtml(reportTypeLabel)}</strong> خلال
-      <strong>${escapeHtml(visiblePeriod)}</strong>، بعد تطبيق البحث المباشر على السجلات القانونية الحالية.
-    </p>
-    <p class="mb-2">
-      إجمالي النتائج المعروضة هو <strong>${formatNumber(rows.length)}</strong> سجل، منها
-      <strong>${formatNumber(contractRows.length)}</strong> عقداً عاماً و
-      <strong>${formatNumber(leaseRows.length)}</strong> عقد إيجار، مع
-      <strong>${formatNumber(expiredLeaseRows.length)}</strong> إيجاراً منتهياً يحتاج متابعة قانونية.
-    </p>
-    <p class="mb-0">
-      حالة العقود الحالية تتوزع بين <strong>${formatNumber(completedContracts)}</strong> عقود مكتملة،
-      <strong>${formatNumber(pendingContracts)}</strong> عقود قيد الاستكمال،
-      و<strong>${formatNumber(newContracts)}</strong> عقود جديدة، دون عرض أي بيانات مالية أو محاسبية.
-    </p>
-  `;
-}
-
 function updateContractorSummary(state, rows) {
   if (!state.contractorSummaryBody) {
     return;
@@ -449,22 +402,24 @@ function updateContractorSummary(state, rows) {
 
   const grouped = new Map();
 
-  rows.filter(row => row.record_type === 'contract').forEach(row => {
-    const current = grouped.get(row.contractor_id) || {
-      contractor_id: row.contractor_id,
-      contractor_name: row.contractor_name,
-      contracts_count: 0,
-      latest_contract_date: ''
-    };
+  rows
+    .filter(row => row.record_type === 'contract')
+    .forEach(row => {
+      const current = grouped.get(row.contractor_id) || {
+        contractor_id: row.contractor_id,
+        contractor_name: row.contractor_name,
+        contracts_count: 0,
+        latest_contract_date: ''
+      };
 
-    current.contracts_count += 1;
+      current.contracts_count += 1;
 
-    if (!current.latest_contract_date || (row.end_date && row.end_date > current.latest_contract_date)) {
-      current.latest_contract_date = row.end_date || row.start_date || row.filter_date || '';
-    }
+      if (!current.latest_contract_date || (row.start_date && row.start_date > current.latest_contract_date)) {
+        current.latest_contract_date = row.start_date || row.filter_date || '';
+      }
 
-    grouped.set(row.contractor_id, current);
-  });
+      grouped.set(row.contractor_id, current);
+    });
 
   const summaryRows = [...grouped.values()].sort((left, right) => {
     if (right.contracts_count !== left.contracts_count) {
@@ -477,7 +432,7 @@ function updateContractorSummary(state, rows) {
   if (summaryRows.length === 0) {
     state.contractorSummaryBody.innerHTML = `
       <tr>
-        <td colspan="4" class="text-center text-muted py-4">لا توجد عقود مطابقة لعرض ملخص المقاولين.</td>
+        <td colspan="3" class="text-center text-muted py-4">لا توجد عقود مطابقة لعرض ملخص المقاولين.</td>
       </tr>
     `;
     return;
@@ -487,8 +442,7 @@ function updateContractorSummary(state, rows) {
     .map(
       row => `
         <tr>
-          <td class="text-nowrap fw-semibold">${escapeHtml(row.contractor_id)}</td>
-          <td>${escapeHtml(row.contractor_name)}</td>
+          <td class="fw-semibold">${escapeHtml(row.contractor_name)}</td>
           <td>${formatNumber(row.contracts_count)}</td>
           <td class="text-nowrap">${escapeHtml(row.latest_contract_date || '—')}</td>
         </tr>
@@ -500,7 +454,6 @@ function updateContractorSummary(state, rows) {
 function updatePrintMeta(state, rows, type, from, to) {
   const reportTypeLabel = REPORT_TYPE_LABELS[type] || REPORT_TYPE_LABELS.all;
   const periodLabel = resolvePeriodLabel(rows, from, to);
-  const generatedOn = state.root.dataset.generatedOn || formatYmd(new Date());
 
   if (state.printTitle) {
     state.printTitle.textContent = reportTypeLabel;
@@ -508,10 +461,6 @@ function updatePrintMeta(state, rows, type, from, to) {
 
   if (state.printPeriod) {
     state.printPeriod.textContent = `الفترة: ${periodLabel}`;
-  }
-
-  if (state.printDate) {
-    state.printDate.textContent = `تاريخ الإصدار: ${generatedOn}`;
   }
 
   if (state.period) {
@@ -554,11 +503,8 @@ async function exportCurrentViewToDocx(state) {
     return;
   }
 
-  const contractorSummaryRows = collectContractorSummaryRows(state.filteredRows);
   const reportTitle = state.printTitle?.textContent || REPORT_TYPE_LABELS.all;
   const reportPeriod = state.printPeriod?.textContent || 'الفترة: كافة الفترات';
-  const reportDate = state.printDate?.textContent || `تاريخ الإصدار: ${state.root.dataset.generatedOn || formatYmd(new Date())}`;
-  const statementText = extractPlainText(state.statement?.innerHTML || '');
   const fileStem = buildReportFileStem(state);
 
   const zip = new window.JSZip();
@@ -631,30 +577,25 @@ async function exportCurrentViewToDocx(state) {
       </w:styles>`
   );
 
-  zip.folder('word')?.folder('_rels')?.file(
-    'document.xml.rels',
-    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+  zip
+    .folder('word')
+    ?.folder('_rels')
+    ?.file(
+      'document.xml.rels',
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
       <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
         <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
       </Relationships>`
-  );
+    );
 
   const reportTableRows = state.filteredRows.map(row => [
     row.display_type,
     row.reference,
-    row.subject,
-    `${row.contractor_name} / ${row.contractor_id}`,
+    [row.subject, row.contract_details].filter(Boolean).join(' - '),
+    [row.contractor_name, row.parties].filter(Boolean).join(' / '),
     row.status,
     row.start_date || '—',
-    row.end_date || '—',
-    row.text_report
-  ]);
-
-  const contractorTableRows = contractorSummaryRows.map(row => [
-    row.contractor_id,
-    row.contractor_name,
-    `${row.contracts_count}`,
-    row.latest_contract_date || '—'
+    row.signatures || '—'
   ]);
 
   zip.folder('word')?.file(
@@ -677,19 +618,21 @@ async function exportCurrentViewToDocx(state) {
         xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape"
         mc:Ignorable="w14 wp14">
         <w:body>
-          ${buildDocxParagraph('مكتب الأستاذ محمد عاطف - المحامي', { bold: true, size: 34 })}
-          ${buildDocxParagraph('Professional Office Statement', { size: 24 })}
           ${buildDocxParagraph(reportTitle, { bold: true, size: 28 })}
           ${buildDocxParagraph(reportPeriod)}
-          ${buildDocxParagraph(reportDate)}
-          ${buildDocxParagraph(statementText)}
           ${buildDocxParagraph('نتائج التقرير', { bold: true, size: 26, spacingBefore: 240 })}
           ${buildDocxTable(
-            ['نوع التقرير', 'المرجع', 'تفاصيل العقد', 'المقاول / المعرف', 'الحالة', 'تاريخ البداية', 'تاريخ النهاية / العقد', 'البيان النصي'],
+            [
+              'نوع التقرير',
+              'المرجع',
+              'تفاصيل العقد',
+              'الأطراف / المقاول',
+              'الحالة',
+              'تاريخ البداية',
+              'التوقيعات'
+            ],
             reportTableRows
           )}
-          ${buildDocxParagraph('ملخص المقاولين', { bold: true, size: 26, spacingBefore: 240 })}
-          ${buildDocxTable(['معرف المقاول', 'اسم المقاول', 'عدد العقود', 'آخر تاريخ عقد'], contractorTableRows)}
           <w:sectPr>
             <w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/>
             <w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720" w:header="708" w:footer="708" w:gutter="0"/>
@@ -704,29 +647,6 @@ async function exportCurrentViewToDocx(state) {
   });
 
   downloadBlob(blob, `${fileStem}.docx`);
-}
-
-function collectContractorSummaryRows(rows) {
-  const grouped = new Map();
-
-  rows.filter(row => row.record_type === 'contract').forEach(row => {
-    const current = grouped.get(row.contractor_id) || {
-      contractor_id: row.contractor_id,
-      contractor_name: row.contractor_name,
-      contracts_count: 0,
-      latest_contract_date: ''
-    };
-
-    current.contracts_count += 1;
-
-    if (!current.latest_contract_date || (row.end_date && row.end_date > current.latest_contract_date)) {
-      current.latest_contract_date = row.end_date || row.start_date || row.filter_date || '';
-    }
-
-    grouped.set(row.contractor_id, current);
-  });
-
-  return [...grouped.values()].sort((left, right) => right.contracts_count - left.contracts_count);
 }
 
 function buildDocxParagraph(text, options = {}) {
@@ -756,7 +676,10 @@ function buildDocxParagraph(text, options = {}) {
 }
 
 function buildDocxTable(headers, rows) {
-  const safeRows = rows.length > 0 ? rows : [['لا توجد نتائج مطابقة للفلاتر الحالية']];
+  const safeRows =
+    rows.length > 0
+      ? rows
+      : [headers.map((header, index) => (index === 0 ? 'لا توجد نتائج مطابقة للفلاتر الحالية' : '—'))];
   const headerRow = `
     <w:tr>
       ${headers

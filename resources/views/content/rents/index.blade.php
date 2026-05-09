@@ -10,6 +10,37 @@
   @vite(['resources/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js'])
 @endsection
 
+@push('modals')
+  <div class="modal fade legal-file-preview-modal" id="documents-preview-modal" tabindex="-1"
+    aria-labelledby="documents-preview-title" aria-hidden="true" role="dialog" data-document-preview-modal
+    data-preview-default-title="معاينة الملف">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title text-truncate" id="documents-preview-title" data-document-preview-title>معاينة الملف</h5>
+          <button type="button" class="btn-close ms-0" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+        </div>
+        <div class="modal-body">
+          <div id="documents-preview-stage" class="legal-file-preview-stage" data-document-preview-stage
+            aria-live="polite">
+            <div class="legal-pdf-placeholder" data-pdf-empty role="status">
+              <i class="icon-base ti tabler-file-search text-primary mb-2" aria-hidden="true"></i>
+              <h6 class="mb-1">لا يوجد ملف متاح للمعاينة</h6>
+              <p class="mb-0 text-muted text-center">اختر مستندًا من الجدول لعرضه هنا</p>
+            </div>
+            <div class="legal-pdf-placeholder d-none" data-pdf-unsupported role="status">
+              <i class="icon-base ti tabler-file-alert text-warning mb-2" aria-hidden="true"></i>
+              <h6 class="mb-1">لا توجد معاينة مباشرة لهذا الملف</h6>
+              <p class="mb-0 text-muted text-center">المعاينة متاحة لملفات PDF فقط</p>
+            </div>
+            <iframe class="legal-pdf-frame d-none" data-pdf-frame title="معاينة الملف"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+@endpush
+
 @section('content')
   <div class="legal-resource-page d-flex flex-column gap-4" dir="rtl">
     <x-page-alerts />
@@ -52,13 +83,17 @@
                 <td>
                   <div class="d-flex gap-1">
                     @if ($rent->con_pdf_url)
-                      <a href="{{ $rent->con_pdf_url }}" target="_blank" class="btn btn-sm btn-icon btn-label-danger"
-                        data-bs-toggle="tooltip" title="تحميل PDF">
+                      {{-- زر معاينة الـ PDF --}}
+                      <a href="javascript:void(0);" class="btn btn-sm btn-icon btn-label-danger"
+                        data-document-preview-trigger data-preview-url="{{ $rent->con_pdf_url }}"
+                        data-preview-title="معاينة عقد الإيجار" data-preview-extension="pdf" data-bs-toggle="tooltip"
+                        title="عرض الملف">
                         <i class="ti tabler-file-type-pdf"></i>
                       </a>
                     @endif
 
                     @if ($rent->con_word_url)
+                      {{-- زر الـ Word يبقى كما هو للتحميل لأن المتصفح لا يعرضه مباشرة --}}
                       <a href="{{ $rent->con_word_url }}" target="_blank" class="btn btn-sm btn-icon btn-label-info"
                         data-bs-toggle="tooltip" title="تحميل Word">
                         <i class="ti tabler-file-word"></i>

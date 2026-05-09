@@ -44,6 +44,15 @@
       "icon": "menu-icon icon-base ti tabler-report-search",
       "name": "مركز التقارير القانونية",
       "slug": "legal-reports"
+    },
+    {
+      "menuHeader": "إعدادات النظام"
+    },
+    {
+      "url": "/system-settings",
+      "icon": "menu-icon icon-base ti tabler-settings-cog",
+      "name": "الإعدادات والصيانة",
+      "slug": "system-settings"
     }
   ]
 }
