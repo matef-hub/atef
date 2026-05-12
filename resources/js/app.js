@@ -1261,3 +1261,65 @@ import.meta.glob([
   // '../assets/json/**',
   '../assets/vendor/fonts/**'
 ]);
+
+// ---------------------------------------------------------------------------
+// Weatehr widget
+// ---------------------------------------------------------------------------
+
+document.addEventListener('DOMContentLoaded', function () {
+  const weatherIcon = document.getElementById('weather-icon');
+  const weatherTemp = document.getElementById('weather-temp');
+  const weatherCity = document.getElementById('weather-city');
+
+  // إحداثيات الإسكندرية (تقدر تغيرها أو تخليها تلقائية لاحقاً)
+  const lat = 31.2001;
+  const lon = 29.9187;
+
+  async function fetchWeather() {
+    try {
+      // 1. جلب بيانات الطقس
+      const response = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`
+      );
+      const data = await response.json();
+      const weather = data.current_weather;
+
+      // 2. تحديث درجة الحرارة
+      weatherTemp.innerText = `${Math.round(weather.temperature)}°C`;
+
+      // 3. تحديث الأيقونة (بالترتيب اللي شغال عندك)
+      updateWeatherIcon(weather.weathercode);
+
+      // 4. (اختياري) لو حابب تجيب اسم المنطقة الحقيقية من الإحداثيات
+      // لو ثبتناها "الإسكندرية" في الـ HTML مفيش داعي نغيرها برمجياً إلا لو حبيت
+      // weatherCity.innerText = "الإسكندرية";
+    } catch (error) {
+      console.error('Error fetching weather:', error);
+      weatherTemp.innerText = '!!';
+    }
+  }
+
+  function updateWeatherIcon(code) {
+    let iconName = 'tabler-sun'; // الافتراضي
+
+    if (code === 0) {
+      iconName = 'tabler-sun'; // صافي
+    } else if (code >= 1 && code <= 3) {
+      iconName = 'tabler-cloud'; // غائم جزئياً (بما أن sun-cloud غير موجودة عندك)
+    } else if (code >= 45 && code <= 48) {
+      iconName = 'tabler-wind'; // ضباب أو رياح
+    } else if (code >= 51 && code <= 67) {
+      iconName = 'tabler-cloud-rain'; // مطر
+    } else if (code >= 71 && code <= 77) {
+      iconName = 'tabler-snowflake'; // ثلج
+    } else if (code >= 80 && code <= 82) {
+      iconName = 'tabler-bolt'; // عاصفة رعدية
+    }
+
+    // الترتيب الذي أكدت أنه يعمل عندك
+    weatherIcon.className = `${iconName} icon-base ti icon-md`;
+  }
+
+  fetchWeather();
+  setInterval(fetchWeather, 30 * 60 * 1000); // تحديث كل نصف ساعة
+});

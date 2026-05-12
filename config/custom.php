@@ -9,7 +9,7 @@ return [
   'custom' => [
     'myLayout' => 'vertical', // Layout type: 'vertical' (default), 'horizontal'
     // 'primaryColor' => '#FF4646', // Set the primary color
-    'myTheme' => 'light', // Theme options: 'light' (default), 'dark', 'system'
+    'myTheme' => 'dark', // Theme options: 'light' (default), 'dark', 'system'
     'mySkins' => 'default', // Skin options: 'default', 'bordered'
     'hasSemiDark' => false, // Semi-dark mode: true/false (false by default)
     'myRTLMode' => true, // Right-to-left (RTL) layout: true/false (false by default)

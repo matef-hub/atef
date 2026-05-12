@@ -72,7 +72,8 @@
                 <h6 class="mb-1">القضايا النشطة</h6>
                 <p class="text-muted mb-3">جميع القضايا المدنية والجنائية الجاري متابعتها.</p>
                 <h3 class="mb-1">{{ number_format($activeCasesCount) }}</h3>
-                <small class="text-warning">مدنية {{ number_format($caseOverview['civil']) }} / جنائية {{ number_format($caseOverview['criminal']) }}</small>
+                <small class="text-warning">مدنية {{ number_format($caseOverview['civil']) }} / جنائية
+                  {{ number_format($caseOverview['criminal']) }}</small>
               </div>
               <div class="avatar avatar-md">
                 <span class="avatar-initial rounded bg-label-warning">
@@ -112,7 +113,8 @@
                 <h6 class="mb-1">التنبيهات الحرجة</h6>
                 <p class="text-muted mb-3">مهل استئناف وجلسات ومستندات وعقود تحتاج متابعة قريبة.</p>
                 <h3 class="mb-1">{{ number_format($urgentAlertsCount) }}</h3>
-                <small class="text-danger">استئناف {{ $caseOverview['appeal_windows'] }} / جلسات {{ $caseOverview['upcoming_hearings'] }}</small>
+                <small class="text-danger">استئناف {{ $caseOverview['appeal_windows'] }} / جلسات
+                  {{ $caseOverview['upcoming_hearings'] }}</small>
               </div>
               <div class="avatar avatar-md">
                 <span class="avatar-initial rounded bg-label-danger">
@@ -216,8 +218,7 @@
             </div>
 
             <div id="legalContractInflowChart" data-legal-contract-inflow-chart
-              data-categories='@json($contractInflow['categories'])'
-              data-series='@json($contractInflow['series'])'></div>
+              data-categories='@json($contractInflow['categories'])' data-series='@json($contractInflow['series'])'></div>
           </div>
         </div>
       </div>
@@ -232,7 +233,11 @@
           </div>
 
           <div class="card-body legal-alert-stack">
-            @if ($appealDeadlineCases->isEmpty() && $upcomingCaseHearings->isEmpty() && $expiringRentContracts->isEmpty() && $expiringDocuments->isEmpty())
+            @if (
+                $appealDeadlineCases->isEmpty() &&
+                    $upcomingCaseHearings->isEmpty() &&
+                    $expiringRentContracts->isEmpty() &&
+                    $expiringDocuments->isEmpty())
               <div class="alert alert-success mb-0" role="alert">
                 <div class="d-flex align-items-center gap-2">
                   <i class="icon-base ti tabler-circle-check icon-18px"></i>
@@ -436,7 +441,7 @@
                   <tr>
                     <th>رقم العقد</th>
                     <th>المشروع</th>
-                    <th>المورد</th>
+                    <th>المقاول</th>
                     <th>الحالة</th>
                   </tr>
                 </thead>
@@ -458,7 +463,6 @@
                           </div>
                           <div class="d-flex flex-column">
                             <span class="fw-medium">{{ $contract['supplier'] }}</span>
-                            <small class="text-muted">Supplier</small>
                           </div>
                         </div>
                       </td>

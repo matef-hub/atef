@@ -42,6 +42,23 @@ h6,
   font-weight: 700;
 }
 
+.form-label,
+.col-form-label {
+  color: #ffc898;
+}
+
+.mweather-widget {
+  color: #9c96e7;
+  font-weight: 700;
+}
+
+/* توسيط نصوص جميع الجداول ورؤوسها */
+.table th,
+.table td {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
 /* تعديل بسيط لـ DataTables عشان تليق مع الخط الجديد */
 .dataTables_info,
 .dataTables_paginate,
@@ -483,4 +500,8 @@ h6,
   min-width: stretch !important;
   min-width: -webkit-fill-available !important;
   min-width: -moz-available !important;
+}
+
+input#contr_number {
+  color: #ffffff;
 }

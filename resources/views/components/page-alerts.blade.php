@@ -3,23 +3,25 @@
   $successDetail = session('success_detail');
   $successHtml = $successDetail
       ? '<div class="text-end">' .
-          '<div class="fw-semibold mb-1">' . e($successMessage) . '</div>' .
-          '<code class="d-block small text-break bg-label-success rounded px-2 py-1" dir="ltr">' . e($successDetail) . '</code>' .
-        '</div>'
+          '<div class="fw-semibold mb-1">' .
+          e($successMessage) .
+          '</div>' .
+          '<code class="d-block small text-break bg-label-success rounded px-2 py-1" dir="ltr">' .
+          e($successDetail) .
+          '</code>' .
+          '</div>'
       : null;
 
   $errorListHtml = $errors->any()
       ? '<ul class="mb-0 ps-4 text-start">' .
-          collect($errors->all())
-              ->map(fn($error) => '<li class="mb-1">' . e($error) . '</li>')
-              ->implode('') .
+          collect($errors->all())->map(fn($error) => '<li class="mb-1">' . e($error) . '</li>')->implode('') .
           '</ul>'
       : null;
 @endphp
 
 @if (session('success') || $errors->any())
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
       if (typeof window.Swal === 'undefined') {
         return;
       }
@@ -29,10 +31,10 @@
       @if ($errors->any())
         window.Swal.fire({
           icon: 'error',
-          title: @json(__('Whoops! Something went wrong.')),
+          title: @json(__('خلى بالك فى بيانات ناقصة أو فيها مشكلة')),
           html: @json($errorListHtml),
-          confirmButtonText: @json(__('OK')),
-          didOpen: function (popup) {
+          confirmButtonText: @json(__('نحاول تانى')),
+          didOpen: function(popup) {
             popup.setAttribute('dir', alertDirection);
           }
         });
@@ -51,7 +53,7 @@
           showConfirmButton: false,
           timer: @json($successDetail ? 5000 : 3000),
           timerProgressBar: true,
-          didOpen: function (toast) {
+          didOpen: function(toast) {
             toast.setAttribute('dir', alertDirection);
             toast.style.maxWidth = 'min(92vw, 420px)';
             toast.addEventListener('mouseenter', window.Swal.stopTimer);
