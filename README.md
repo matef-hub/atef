@@ -36,6 +36,6 @@ npm run build
 php artisan serve
 ```
 
-Do not run migrations against an existing production database without backups and review. **A `.env` file is tracked in this repository**. Inspect it privately, rotate any real secrets and remove sensitive history before treating the codebase as safe to distribute.
+Do not run migrations against an existing production database without backups and review. **A `.env` file was previously committed and is now removed from the current tree.** Earlier Git history may still reveal values: rotate any live secrets, keep runtime configuration outside Git and coordinate historical cleanup.
 
 **Mohamed Atef** · Egyptian Lawyer & Legal Tech Developer.
