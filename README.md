@@ -1,53 +1,41 @@
-# ⚖️ SmartLawyer System v1.0
+<div align="center"><img src="https://raw.githubusercontent.com/matef-hub/atefdodo/main/assets/research-signal.svg" width="100%" alt="Legal research, verified data and applied AI" /></div>
 
-> نظام الإدارة القانونية الذكي - تطوير المحامي محمد عاطف
+# Legal Practice Management | نظام الإدارة القانونية
 
-![SmartLawyer Dashboard](https://img.shields.io/badge/Laravel-11.x-red?style=for-the-badge&logo=laravel)
-![Vuexy](https://img.shields.io/badge/UI-Vuexy--Tabler-blue?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-Active-success?style=for-the-badge)
+A **Laravel 12** practice-management workspace using Vuexy for Egyptian law-office workflows. The application routes include case and hearing controllers, contracts, documents and reporting.
 
----
+[Developer](https://github.com/matef-hub) · [Practice](https://ateflaw.com/)
 
-## 📖 نظرة عامة
+## Workstreams
 
-**SmartLawyer** هو منصة متطورة صُممت خصيصاً للمحامين لربط العمل القانوني بالبرمجة الذكية. النظام لا يكتفي بالأرشفة، بل يدير القضايا (مدني/جنائي) بنظام الخطوات الذكي (Wizard) ويقوم بحساب المواعيد القانونية آلياً.
+| Matters | Documents | Operations |
+|:--|:--|:--|
+| Legal cases and hearing records | Contracts and office files | Dashboard and reports |
+| History and follow-up | Document-related controllers | Practice settings |
 
----
+```mermaid
+flowchart LR
+  A["Authorized legal user"] --> B["Laravel 12"]
+  B --> C["Cases / hearings"]
+  B --> D["Documents / contracts"]
+  C --> E["Reporting"]
+  D --> E
+```
 
-## 🛠️ المميزات التقنية الذكية
+## Develop locally
 
-- **نظام القضايا (Litigation Wizard):** تم استخدام `BS Stepper` لتقسيم إدخال القضية لخطوات، مع تبديل الحقول ديناميكياً (Dynamic Toggle) بين المدني والجنائي.
-- **تتبع الجلسات (Session Tracker):** نظام يربط الجلسة بقرار المحكمة ويقوم بجدولة الجلسة القادمة في الـ Timeline فورياً.
-- **تنبيهات الاستئناف:** حساب تلقائي لموعد الـ 40 يوماً في القضايا المدنية وتنبيه المستخدم قبل فوات الميعاد.
-- **معالجة المستندات:** رفع ومعاينة ملفات الـ PDF والـ Contracts مباشرة باستخدام `Blob URLs` لتجاوز قيود الـ Sandbox.
+Requires PHP 8.2+, Composer, Node.js and a prepared development database. Licensed Vuexy dependencies and assets require appropriate access.
 
----
+```bash
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+npm run build
+php artisan serve
+```
 
-## 🏗️ الهيكل البرمجي (Architecture)
+Do not run migrations against an existing production database without backups and review. **A `.env` file is tracked in this repository**. Inspect it privately, rotate any real secrets and remove sensitive history before treating the codebase as safe to distribute.
 
-- **Controllers:** تم فصل المنطق البرمجي (Dashboard, Contract, Litigation) لضمان سهولة التوسع.
-- **Utilities:** استخدام ملف `legal-utils.js` كمركز موحد لإدارة (Flatpickr, Select2, Dropzone).
-- **Validation:** استخدام `ContractRequest` و `LitigationRequest` لضمان دقة البيانات القانونية قبل دخولها للقاعدة.
-
----
-
-## 🚀 التشغيل السريع (Quick Start)
-
-1. قم بضبط إعدادات قاعدة البيانات في ملف `.env`.
-2. تشغيل الأوامر التالية بالترتيب:
-
-   ```bash
-   composer install
-   npm install
-   php artisan key:generate
-   php artisan migrate --seed
-   php artisan storage:link
-   npm run build
-   ```
-
-   composer install
-   npm install
-   php artisan key:generate
-   php artisan migrate --seed
-   php artisan storage:link
-   npm run build
+**Mohamed Atef** · Egyptian Lawyer & Legal Tech Developer.
